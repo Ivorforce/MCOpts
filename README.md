@@ -2,7 +2,8 @@
 
 To add MCOpts as a dependency to your mod, add this to your build.gradle:
 
-    // At the top
+Up above
+
     buildscript {
 
         dependencies {
@@ -11,8 +12,8 @@ To add MCOpts as a dependency to your mod, add this to your build.gradle:
     }
 
     apply plugin: 'com.github.johnrengelman.shadow'
-    
-    // Down below
+
+Down below
 
     dependencies {
         deobfCompile 'ivorius.mcopts:MCOpts:0.9' // Change the version accordingly, obviously

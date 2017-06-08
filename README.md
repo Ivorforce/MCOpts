@@ -39,3 +39,7 @@ Now, re-setup your workspace:
 If you use IDEA, remember to refresh your gradle project too. You will need at least Gradle 3.0, so set up your gradle home correctly.
 
 And that's it! MCOpts is now included in your jar.
+
+# Using MCOpts
+
+Please refer to [using MCOpts](https://github.com/Ivorforce/MCOpts/wiki/Using-MCOpts).

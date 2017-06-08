@@ -1,0 +1,97 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url = "http://files.minecraftforge.net/maven" }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'maven-publish'
+
+version = "1.0"
+group = "ivorius.mcopts" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "mcopts"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+minecraft {
+    version = "1.11.2-13.20.0.2304"
+    runDir = "run"
+    
+    mappings = "snapshot_20161220"
+}
+
+dependencies {
+
+}
+
+processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    // copy everything else except the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+publishing {
+    tasks.publish.dependsOn 'build'
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+            artifact sourceJar
+
+            pom.withXml {
+                asNode().appendNode('description', 'Command library for Minecraft')
+                asNode().appendNode('url', 'https://github.com/Ivorforce/MCOpts')
+            }
+            //The publication doesn't know about our dependencies, so we have to manually add them to the pom
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+
+                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
+                configurations.compile.allDependencies.each {
+                    if (it.group != null && it.group != "unspecified"
+                            && it.name != null && it.name != "unspecified") {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        if (project.hasProperty('mavenUrl')) {
+            maven {
+                url project."mavenUrl"
+                if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+                    credentials {
+                        username project."mavenUser"
+                        password project."mavenPassword"
+                    }
+                }
+            }
+        } else {
+            mavenLocal()
+        }
+    }
+}

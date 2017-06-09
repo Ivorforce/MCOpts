@@ -18,9 +18,6 @@ version = "0.9"
 group = "ivorius.mcopts" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "mcopts"
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 minecraft {
     version = "1.11.2-13.20.0.2304"
     runDir = "run"
@@ -50,6 +47,9 @@ processResources {
         exclude 'mcmod.info'
     }
 }
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 publishing {
     tasks.publish.dependsOn 'build'

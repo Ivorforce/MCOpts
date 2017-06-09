@@ -16,7 +16,7 @@ public class MCOpts
 {
     public static final String NAME = "MCOpts";
     //    public static final String MOD_ID = "mcopts";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "0.9";
 
     public static Logger logger = LogManager.getLogger(NAME);
 

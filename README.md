@@ -42,4 +42,4 @@ And that's it! MCOpts is now included in your jar.
 
 # Using MCOpts
 
-Please refer to [using MCOpts](https://github.com/Ivorforce/MCOpts/wiki/Using-MCOpts).
+Please refer to [using MCOpts](https://github.com/Ivorforce/MCOpts/wiki/Using-MCOpts) and [adapting MCOpts](https://github.com/Ivorforce/MCOpts/wiki/Adapting-MCOpts).

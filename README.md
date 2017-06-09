@@ -1,3 +1,13 @@
+# What?
+
+MCOpts is a getopt / getopt_long / cli / bash oriented minecraft command parameter management api.
+
+In short, this means your commands may look a little like this:
+
+    /#gen Tower -msr90 --gen natural_9i249u982 -d0 -x ~2
+
+The library especially aims to eliminate redundant data (such as the same command usage in every single language file), and shorten common command argument processes.
+
 # Getting Started
 
 To add MCOpts as a dependency to your mod, add this to your build.gradle:

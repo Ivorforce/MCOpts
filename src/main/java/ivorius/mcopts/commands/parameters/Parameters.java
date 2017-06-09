@@ -109,10 +109,9 @@ public class Parameters
         return trimmed;
     }
 
-    public static <T extends Expect> T expect()
+    public static Expect expect()
     {
-        //noinspection unchecked
-        return (T) new Expect();
+        return new Expect();
     }
 
     public Parameters build(String[] args)

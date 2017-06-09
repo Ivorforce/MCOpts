@@ -55,3 +55,9 @@ And that's it! MCOpts is now included in your jar.
 # Using MCOpts
 
 Please refer to [using MCOpts](https://github.com/Ivorforce/MCOpts/wiki/Using-MCOpts) and [adapting MCOpts](https://github.com/Ivorforce/MCOpts/wiki/Adapting-MCOpts).
+
+# License TL;DR
+
+You are free to include the library using the steps above, which will automatically add all required files (license, notices) to your jar. If you modify it, you also have to include a changes file to outline roughly what you did.
+
+[Full TL;DR](https://tldrlegal.com/license/apache-license-2.0-(apache-2.0))

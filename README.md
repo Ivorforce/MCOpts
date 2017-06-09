@@ -6,7 +6,9 @@ In short, this means your commands may look a little like this:
 
     /#gen Tower -msr90 --gen natural_9i249u982 -d0 -x ~2
 
-The library especially aims to eliminate redundant data (such as the same command usage in every single language file), and shorten common command argument processes.
+The library especially aims to eliminate redundant data (such as the same command usage in every single language file), and shorten common command argument processes. 
+
+This greatly reduces the susceptibility to errors and should save you time in the long run.
 
 # Getting Started
 

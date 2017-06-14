@@ -219,9 +219,14 @@ public class Expect
     /**
      * For quoted arguments with spaces that repeat just one completion
      */
-    public Expect words(Supplier<Expect> supplier)
+    public Expect words(Consumer<Expect> consumer)
     {
-        return split(() -> supplier.get().repeat());
+        return split(() ->
+        {
+            Expect expect = Parameters.expect();
+            consumer.accept(expect);
+            return expect.repeat();
+        });
     }
 
     public int index()

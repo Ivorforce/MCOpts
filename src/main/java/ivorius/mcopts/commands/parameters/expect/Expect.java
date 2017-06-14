@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -199,15 +200,14 @@ public class Expect
     /**
      * For quoted arguments with spaces
      */
-    public Expect split(Consumer<Expect> consumer)
+    public Expect split(Supplier<Expect> supplier)
     {
         return nextRaw((server, sender, parameters, pos) ->
                 {
                     // From CommandHandler
-                    String[] split = parameters.last().split(" ", - 1);
+                    String[] split = parameters.last().split(" ", -1);
 
-                    return Parameters.expect()
-                            .then(consumer)
+                    return supplier.get()
                             .get(server, sender, split, pos)
                             .stream()
                             // Escape quotes
@@ -219,13 +219,9 @@ public class Expect
     /**
      * For quoted arguments with spaces that repeat just one completion
      */
-    public Expect words(Consumer<Expect> consumer)
+    public Expect words(Supplier<Expect> supplier)
     {
-        return split(e ->
-        {
-            consumer.accept(e);
-            e.repeat();
-        });
+        return split(() -> supplier.get().repeat());
     }
 
     public int index()

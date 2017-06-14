@@ -14,7 +14,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
-version = "0.9.1.3"
+version = "0.9.1.4"
 group = "ivorius.mcopts" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "mcopts"
 

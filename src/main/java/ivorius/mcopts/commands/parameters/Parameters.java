@@ -97,7 +97,7 @@ public class Parameters
         reader.close();
 
         if (args.length > 0 && args[args.length - 1].length() == 0 && last_tt != '\"')
-            quoted.add(""); // Suggested param, but only when we don't end in a quote
+            quoted.add(""); // Param was suggested, but only when we don't end in a quote
 
         return quoted.stream().toArray(String[]::new);
     }

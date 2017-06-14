@@ -203,13 +203,8 @@ public class Expect
     {
         return nextRaw((server, sender, parameters, pos) ->
                 {
-                    String[] split = parameters.last().split(" ");
-                    if (parameters.last().endsWith("/\\s/"))
-                    {
-                        // Last char is whitespace, so add empty param
-                        split = Arrays.copyOf(split, split.length + 1);
-                        split[split.length + 1] = "";
-                    }
+                    // From CommandHandler
+                    String[] split = parameters.last().split(" ", - 1);
 
                     return Parameters.expect()
                             .then(consumer)

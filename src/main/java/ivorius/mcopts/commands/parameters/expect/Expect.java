@@ -196,6 +196,31 @@ public class Expect
         return identity();
     }
 
+    /**
+     * For quoted arguments with spaces
+     */
+    public Expect split(Consumer<Expect> consumer)
+    {
+        return nextRaw((server, sender, parameters, pos) -> Parameters.expect()
+                .get(server, sender, parameters.last().split(" "), pos)
+                .stream()
+                // Escape quotes
+                .map(s -> s.replaceAll("\"", "\\\""))
+        );
+    }
+
+    /**
+     * For quoted arguments with spaces that repeat just one completion
+     */
+    public Expect words(Consumer<Expect> consumer)
+    {
+        return split(e ->
+        {
+            consumer.accept(e);
+            e.repeat();
+        });
+    }
+
     public int index()
     {
         return params.size();
@@ -228,7 +253,7 @@ public class Expect
                         // Spaces need quotes
                         if (s.contains(" ") && !s.startsWith("\""))
                             return String.format("\"%s\"", s);
-                        // Had quotes but quoted() deleted it
+                            // Had quotes but quoted() deleted it
                         else if (args[args.length - 1].startsWith("\""))
                             return "\"" + s;
                         else

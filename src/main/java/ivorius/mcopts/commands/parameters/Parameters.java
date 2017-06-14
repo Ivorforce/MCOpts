@@ -11,6 +11,7 @@ import com.google.common.primitives.Doubles;
 import ivorius.mcopts.MCOpts;
 import ivorius.mcopts.commands.parameters.expect.Expect;
 import joptsimple.internal.Strings;
+import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -96,8 +97,20 @@ public class Parameters
 
         reader.close();
 
-        if (args.length > 0 && args[args.length - 1].length() == 0 && last_tt != '\"')
-            quoted.add(""); // Param was suggested, but only when we don't end in a quote
+
+        try
+        {
+            if (args.length > 0 && args[args.length - 1].length() == 0
+                    // ttype gives no distinction between " " and " EOF - peekc does
+                    // peekc < 0 means EOF, means quote was not completed
+                    && !(last_tt == '\"' && ReflectionHelper.findField(StreamTokenizer.class, "peekc").getInt(tokenizer) < 0)
+                    )
+                quoted.add(""); // Param was suggested, but only when we don't end in a quote
+        }
+        catch (IllegalAccessException e)
+        {
+            MCOpts.logger.error("Error trying to get peekc", e);
+        }
 
         return quoted.stream().toArray(String[]::new);
     }

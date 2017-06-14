@@ -201,12 +201,23 @@ public class Expect
      */
     public Expect split(Consumer<Expect> consumer)
     {
-        return nextRaw((server, sender, parameters, pos) -> Parameters.expect()
-                .then(consumer)
-                .get(server, sender, parameters.last().split(" "), pos)
-                .stream()
-                // Escape quotes
-                .map(s -> s.replaceAll("\"", "\\\""))
+        return nextRaw((server, sender, parameters, pos) ->
+                {
+                    String[] split = parameters.last().split(" ");
+                    if (parameters.last().endsWith("/\\s/"))
+                    {
+                        // Last char is whitespace, so add empty param
+                        split = Arrays.copyOf(split, split.length + 1);
+                        split[split.length + 1] = "";
+                    }
+
+                    return Parameters.expect()
+                            .then(consumer)
+                            .get(server, sender, split, pos)
+                            .stream()
+                            // Escape quotes
+                            .map(s -> s.replaceAll("\"", "\\\""));
+                }
         );
     }
 

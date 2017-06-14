@@ -79,10 +79,12 @@ public class Parameters
         tokenizer.quoteChar('"');
 
         List<String> quoted = new ArrayList<>();
+        int last_tt = StreamTokenizer.TT_EOF;
         try
         {
-            while (tokenizer.nextToken() != -1)
+            while (tokenizer.nextToken() != StreamTokenizer.TT_EOF)
             {
+                last_tt = tokenizer.ttype;
                 quoted.add(tokenizer.sval);
             }
         }
@@ -94,8 +96,8 @@ public class Parameters
 
         reader.close();
 
-        if (args.length > 0 && args[args.length - 1].length() == 0)
-            quoted.add(""); // Suggested param
+        if (args.length > 0 && args[args.length - 1].length() == 0 && last_tt != '\"')
+            quoted.add(""); // Suggested param, but only when we don't end in a quote
 
         return quoted.stream().toArray(String[]::new);
     }

@@ -202,6 +202,7 @@ public class Expect
     public Expect split(Consumer<Expect> consumer)
     {
         return nextRaw((server, sender, parameters, pos) -> Parameters.expect()
+                .then(consumer)
                 .get(server, sender, parameters.last().split(" "), pos)
                 .stream()
                 // Escape quotes

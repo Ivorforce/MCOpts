@@ -223,8 +223,17 @@ public class Expect
                 && !(parameters.allowsNamed() && (longFlag || shortFlag)))
         {
             return toStrings(param.completions.get(Math.min(entered.count() - 1, param.completions.size() - 1)).complete(server, sender, parameters, pos)).stream()
-                    // More than one word, let's wrap this in quotes
-                    .map(s -> s.contains(" ") && !s.startsWith("\"") ? String.format("\"%s\"", s) : s)
+                    .map(s ->
+                    {
+                        // Spaces need quotes
+                        if (s.contains(" ") && !s.startsWith("\""))
+                            return String.format("\"%s\"", s);
+                        // Had quotes but quoted() deleted it
+                        else if (args[args.length - 1].startsWith("\""))
+                            return "\"" + s;
+                        else
+                            return s;
+                    })
                     .collect(Collectors.toCollection(ArrayList::new));
         }
 

@@ -162,15 +162,24 @@ public class Parameters
 
     public Parameters build(String[] args)
     {
-        raw = parse(args).collect(Collectors.toList());
+        raw = new ArrayList<>(parse(args).collect(Collectors.toList()));
 
         order.add(null);
 
         String curName = null;
-        for (Pair<String, String> pair : raw)
+        for (int p = 0, parsedSize = raw.size(); p < parsedSize; p++)
         {
+            Pair<String, String> pair = raw.get(p);
             String argRaw = pair.getLeft();
             String arg = pair.getRight();
+
+            if (!interpretes() && !argRaw.equals(arg))
+            {
+                raw.remove(p);
+                raw.subList(p, p).addAll(Arrays.stream(argRaw.trim().split(" ")).map(s -> Pair.of(s, s)).collect(Collectors.toList()));
+                p--; // Do this again but not interpreting
+                continue;
+            }
 
             // Test argRaw for params since we don't want --name in "--split \"--name\"" to be a param
             if (interpretes() && hasLongPrefix(argRaw))
@@ -203,11 +212,10 @@ public class Parameters
                 if (until > 0 && curName == null) until--;
 
                 order.add(curName);
-                if (interpretes())
-                    params.put(curName, arg);
-                else
-                    params.putAll(curName, Arrays.asList(argRaw.trim().split(" ")));
+
+                params.put(curName, arg);
                 rawParams.put(curName, argRaw);
+
                 curName = null;
             }
         }

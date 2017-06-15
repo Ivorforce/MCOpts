@@ -21,60 +21,68 @@ fun main(args: Array<String>) {
     val expect = expect(Parameters.expect())
             .named("split").split { expect(it) }
 
-    testBasics(expect) { it.split(" ").toTypedArray() }
-    testBasics(expect) { "--split \"${it.replace("\"", "\\\"")}".split(" ").toTypedArray() }
+    testBasics(expect, { it.split(" ").toTypedArray() }) { it }
+    testBasics(expect, { "--split \"${it.replace("\"", "\\\"")}".split(" ").toTypedArray() }, {
+        (if (it.startsWith("\"")) it.substring(1) else it).replace("\\\"", "\"")
+    })
 }
 
-fun testBasics(expect: Expect, transform: (String) -> Array<String>) {
+fun testBasics(expect: Expect, transform: (String) -> Array<String>, completionTransform: (String) -> String) {
     val server = mock<MinecraftServer>()
     val sender = mock<ICommandSender>()
     val pos = BlockPos(0, 0, 0)
 
-    val removeQuote: (String) -> String = {
-        if (it.startsWith("\""))
-            it.substring(1)
-        else
-            it
-    }
-
     assertSet("Server",
-            b = expect.get(server, sender, transform("Server"), pos).map(removeQuote)
+            b = expect.get(server, sender, transform("Server"), pos).map(completionTransform)
     );
 
     assertSet("Server",
-            b = expect.get(server, sender, transform("Serv"), pos).map(removeQuote)
+            b = expect.get(server, sender, transform("Serv"), pos).map(completionTransform)
     );
 
     assertSet("Server", "World",
-            b = expect.get(server, sender, transform(""), pos).map(removeQuote)
+            b = expect.get(server, sender, transform(""), pos).map(completionTransform)
     );
 
     // Index
 
     assertSet("foo", "fee",
-            b = expect.get(server, sender, transform("Server f"), pos).map(removeQuote)
+            b = expect.get(server, sender, transform("Server f"), pos).map(completionTransform)
     );
 
     // Name
 
     assertSet("name1", "name2",
-            b = expect.get(server, sender, transform("--name n"), pos).map(removeQuote)
+            b = expect.get(server, sender, transform("--name n"), pos).map(completionTransform)
     );
 
     assertSet("Server", "World",
-            b = expect.get(server, sender, transform("--flag "), pos).map(removeQuote)
+            b = expect.get(server, sender, transform("--flag "), pos).map(completionTransform)
     );
 
     // Split
 
     assertSet("word1", "word2",
-            b = expect.get(server, sender, transform("--words \"some thing word"), pos).map(removeQuote)
+            b = expect.get(server, sender, transform("--words \"some thing word"), pos).map(completionTransform)
+    );
+
+    assertSet("word1", "word2",
+            b = expect.get(server, sender, transform("--words \"some thing word"), pos).map(completionTransform)
+    );
+
+    // Interpret
+
+    // We'd expect quotes at the start but it's easier this way
+    assertSet("\"int1", "\"int3\"",
+            b = expect.get(server, sender, transform("Server foo \""), pos).map(completionTransform)
     );
 }
 
 fun expect(e: Expect) = e
         .any("Server", "World")
         .any("foo", "boo", "fee", "bee")
+        .stopInterpreting()
+        .any("\"int1", "int2\"", "\"int3\"")
         .named("name").any("name1", "name2")
         .flag("flag")
         .named("words").words { it.any("word1", "word2") }

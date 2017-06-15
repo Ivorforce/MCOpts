@@ -104,7 +104,7 @@ public class Parameters
                 parsed.add(tokenizer.sval);
 
                 int idx = Math.min(index(reader), full.length());
-                raw.add(full.substring(lastIndex, idx));
+                raw.add(full.substring(lastIndex, idx).trim());
                 lastIndex = idx;
             }
         }
@@ -168,7 +168,7 @@ public class Parameters
 
         String curName = null;
         boolean rawInterpreted = true;
-        for (int p = 0, parsedSize = raw.size(); p < parsedSize; p++)
+        for (int p = 0; p < raw.size(); p++)
         {
             Pair<String, String> pair = raw.get(p);
             String argRaw = pair.getLeft();
@@ -177,7 +177,7 @@ public class Parameters
             if (!interpretes() && rawInterpreted)
             {
                 List<Pair<String, String>> rest = raw.subList(p, raw.size());
-                String restString = rest.stream().map(Pair::getLeft).reduce("", NaP::join);
+                String restString = rest.stream().map(Pair::getLeft).reduce(NaP::join).orElse("");
                 rest.clear();
                 // From CommandHandler limit -1, so we keep empty params
                 Arrays.stream(restString.split(" ", -1)).map(s -> Pair.of(s, s)).forEach(raw::add);

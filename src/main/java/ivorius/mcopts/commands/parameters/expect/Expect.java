@@ -163,17 +163,17 @@ public class Expect
 
     public Expect next(Object completion)
     {
-        return nextRaw((server, sender, params, pos) -> matching(params.last(), completion));
+        return nextRaw((server, sender, params, pos) -> toStrings(completion));
     }
 
     public Expect next(Completer completion)
     {
-        return nextRaw((server, sender, params, pos) -> matching(params.last(), completion.complete(server, sender, params, pos)));
+        return nextRaw((server, sender, params, pos) -> toStrings(completion.complete(server, sender, params, pos)));
     }
 
     public Expect next(Function<Parameters, ?> completion)
     {
-        return nextRaw((server, sender, params, pos) -> matching(params.last(), completion.apply(params)));
+        return nextRaw((server, sender, params, pos) -> toStrings(completion.apply(params)));
     }
 
     public Expect then(Consumer<Expect> fun)
@@ -198,12 +198,18 @@ public class Expect
         return nextRaw((server, sender, parameters, pos) ->
                 {
                     // From CommandHandler
-                    String[] split = parameters.last().split(" ", -1);
+                    String last = parameters.last();
+                    String[] split = last.split(" ", -1);
+
+                    int lastSplit = last.lastIndexOf(" ");
+                    String lastStart = lastSplit >= 0 ? last.substring(0, lastSplit) + " " : "";
 
                     return Parameters.expect()
                             .then(consumer)
                             .get(server, sender, split, pos)
-                            .stream();
+                            .stream()
+                            .map(s -> lastStart + s)
+                            ;
                 }
         );
     }
@@ -236,46 +242,29 @@ public class Expect
         SuggestParameter param = this.params.get(lastName);
 
         String currentArg = parameters.last();
-        String[] currentArgSplit = currentArg.split(" ");
         String currentArgRaw = parameters.lastRaw();
 
         boolean lastArgStartsQuote = args[args.length - 1].startsWith("\"");
         boolean lastArgQuoted = currentArgRaw.startsWith("\"");
 
-        boolean longFlag = Parameters.hasLongPrefix(currentArg);
-        boolean shortFlag = Parameters.hasShortPrefix(currentArg);
+        boolean longFlag = Parameters.hasLongPrefix(currentArgRaw);
+        boolean shortFlag = Parameters.hasShortPrefix(currentArgRaw);
 
         if (param != null && (entered.count() <= param.completions.size() || param.repeat)
                 // It notices we are entering a parameter so it won't be added to the parameters args anyway
                 && !(parameters.allowsNamed() && (longFlag || shortFlag)))
         {
-            return toStrings(param.completions.get(Math.min(entered.count() - 1, param.completions.size() - 1)).complete(server, sender, parameters, pos)).stream()
+            Completer completer = param.completions.get(Math.min(entered.count() - 1, param.completions.size() - 1));
+            return toStrings(completer.complete(server, sender, parameters, pos)).stream()
                     // Is quoted param, so escape contained quotes
-                    .map(s -> lastArgQuoted ? s.replaceAll("\"", "\\\"") : s)
-                    .map(s ->
-                    {
-                        String[] suggestSplit = s.split(" ");
-                        labelShiftBack:
-                        for (int shiftBack = Math.min(suggestSplit.length, currentArgSplit.length) - 1; shiftBack > 0; shiftBack--)
-                        {
-                            for (int back = 1; back <= shiftBack; back++)
-                                if (!currentArgSplit[currentArgSplit.length - 1 - back]
-                                        .equals(suggestSplit[suggestSplit.length - 1 - back]))
-                                    continue labelShiftBack;
-
-                            // Found completion going back, now just complete the closing quote
-                            return Arrays.stream(suggestSplit).skip(shiftBack).reduce("", NaP::join) + "\"";
-                        }
-
-                        // Spaces need quotes nonetheless
-                        if (suggestSplit.length > 1)
-                            return String.format("\"%s\"", s);
-                        // Don't need quotes but user started it
-                        else if (lastArgStartsQuote)
-                            return "\"" + s;
-
-                        return s;
-                    })
+                    .map(s -> lastArgQuoted ? escape(s) : s)
+                    // Filter those that match
+                    .filter(s -> CommandBase.doesStringStartWith(currentArg, s))
+                    // Take the substring, i.e. the portion we complete
+                    // Add the last entered arg back into the start so mc accepts it as completion
+                    .map(s -> args[args.length - 1] + s.substring(currentArg.length(), s.length()))
+                    // Spaces need quotes
+                    .map(s -> (s.contains(" ") && !currentArg.contains(" ")) ? "\"" + escape(s) : s)
                     .collect(Collectors.toCollection(ArrayList::new));
         }
 
@@ -285,13 +274,18 @@ public class Expect
         List<String> suggest = new ArrayList<>();
         suggest.addAll(remaining(currentArg, parameters, false));
         suggest.addAll(remaining(currentArg, parameters, true));
-        return matching(parameters.last(), suggest);
+        return matching(currentArg, suggest);
+    }
+
+    public static String escape(String s)
+    {
+        return s.replaceAll("\"", "\\\"");
     }
 
     @Nonnull
-    public List<String> remaining(String currentArg, Parameters parameters, boolean useShort)
+    public Collection<String> remaining(String currentArg, Parameters parameters, boolean useShort)
     {
-        return matching(currentArg, this.params.entrySet().stream()
+        return toStrings(this.params.entrySet().stream()
                 .filter(e -> e.getKey() != null)
                 .filter(e -> !parameters.has(e.getKey()) // For flags
                         || parameters.get(e.getKey()).count() < e.getValue().completions.size() || e.getValue().repeat)

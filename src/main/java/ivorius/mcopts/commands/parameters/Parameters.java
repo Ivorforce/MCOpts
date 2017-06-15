@@ -169,15 +169,18 @@ public class Parameters
         String curName = null;
         for (Pair<String, String> pair : raw)
         {
+            String argRaw = pair.getLeft();
             String arg = pair.getRight();
-            if (allowsNamed() && hasLongPrefix(arg))
+
+            // Test argRaw for params since we don't want --name in "--split \"--name\"" to be a param
+            if (allowsNamed() && hasLongPrefix(argRaw))
             {
-                flags.add(curName = root(arg.substring(LONG_FLAG_PREFIX.length())));
+                flags.add(curName = root(argRaw.substring(LONG_FLAG_PREFIX.length()).trim()));
                 if (declaredFlags.contains(curName)) curName = null;
             }
-            else if (allowsNamed() && hasShortPrefix(arg))
+            else if (allowsNamed() && hasShortPrefix(argRaw))
             {
-                List<String> curFlags = arg.substring(SHORT_FLAG_PREFIX.length()).chars().mapToObj(c -> String.valueOf((char) c)).collect(Collectors.toList());
+                List<String> curFlags = argRaw.substring(SHORT_FLAG_PREFIX.length()).trim().chars().mapToObj(c -> String.valueOf((char) c)).collect(Collectors.toList());
 
                 for (int i = 0; i < curFlags.size(); i++)
                 {
@@ -190,7 +193,7 @@ public class Parameters
                         String rest = Strings.join(curFlags.subList(i + 1, curFlags.size()), "");
                         order.add(curName);
                         params.put(curName, rest);
-                        rawParams.put(curName, pair.getLeft());
+                        rawParams.put(curName, argRaw);
                         curName = null;
                     }
                 }
@@ -201,7 +204,7 @@ public class Parameters
 
                 order.add(curName);
                 params.put(curName, arg);
-                rawParams.put(curName, pair.getLeft());
+                rawParams.put(curName, argRaw);
                 curName = null;
             }
         }

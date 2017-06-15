@@ -99,13 +99,16 @@ public class Parameters
         {
             while (tokenizer.nextToken() != StreamTokenizer.TT_EOF)
             {
-                last_tt = tokenizer.ttype;
-
-                parsed.add(tokenizer.sval);
-
                 int idx = Math.min(index(reader), full.length());
-                raw.add(full.substring(lastIndex, idx).trim());
+
+                String arg = tokenizer.sval;
+                String argRaw = full.substring(lastIndex, idx);
+
+                parsed.add(arg);
+                raw.add(tokenizer.ttype != '\"' ? argRaw.trim() : argRaw);
+
                 lastIndex = idx;
+                last_tt = tokenizer.ttype;
             }
         }
         catch (IOException e)

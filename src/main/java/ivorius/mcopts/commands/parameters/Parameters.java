@@ -117,9 +117,9 @@ public class Parameters
 
         if (args.length > 0 && args[args.length - 1].length() == 0)
         {
-            String lastRaw = raw.get(raw.size() - 1);
+            String lastRaw = raw.size() > 0 ? raw.get(raw.size() - 1) : null;
             // Are we in an open quote?
-            if (!(last_tt == '\"' && lastRaw.charAt(lastRaw.length() - 1) != '\"'))
+            if (!(last_tt == '\"' && (lastRaw == null || lastRaw.charAt(lastRaw.length() - 1) != '\"')))
                 parsed.add(""); // We are currently writing a new param
         }
 

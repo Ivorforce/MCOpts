@@ -32,7 +32,8 @@ public class Parameters
     public static final String SHORT_FLAG_PREFIX = "-";
     public static final String LONG_FLAG_PREFIX = "--";
 
-    protected List<String> raw;
+    protected List<Pair<String, String>> raw;
+
     protected Set<String> flags;
     protected ListMultimap<String, String> params;
     protected ListMultimap<String, String> rawParams;
@@ -156,13 +157,12 @@ public class Parameters
 
     public Parameters build(String[] args)
     {
-        List<Pair<String, String>> result = parse(args).collect(Collectors.toList());
-        raw = result.stream().map(Pair::getLeft).collect(Collectors.toList());
+        raw = parse(args).collect(Collectors.toList());
 
         order.add(null);
 
         String curName = null;
-        for (Pair<String, String> pair : result)
+        for (Pair<String, String> pair : raw)
         {
             String arg = pair.getRight();
             if (allowsNamed() && hasLongPrefix(arg))
@@ -276,7 +276,13 @@ public class Parameters
     public String last()
     {
         requireBuilt();
-        return raw.get(raw.size() - 1);
+        return raw.get(raw.size() - 1).getRight();
+    }
+
+    public String lastRaw()
+    {
+        requireBuilt();
+        return raw.get(raw.size() - 1).getLeft();
     }
 
     public String[] lastAsArray()
@@ -320,7 +326,7 @@ public class Parameters
         return new Parameter<>(has(name) && !params.containsKey(name) ? -1 : 0, name, params.get(name), null);
     }
 
-    public List<String> raw()
+    public List<Pair<String, String>> raw()
     {
         requireBuilt();
         return Collections.unmodifiableList(raw);

@@ -86,12 +86,6 @@ public class Expect
         return parameters;
     }
 
-    protected Expect identity()
-    {
-        //noinspection unchecked
-        return (Expect) this;
-    }
-
     @Nonnull
     protected SuggestParameter getOrCreate(@Nullable String name)
     {
@@ -116,7 +110,7 @@ public class Expect
         }
         this.aliases.putAll(name, Arrays.asList(aliases));
 
-        return identity();
+        return this;
     }
 
     private Pair<String, Boolean> name(String name)
@@ -148,13 +142,13 @@ public class Expect
         currentCount = 1;
         optional(); // All params are expected to be optional by default
 
-        return identity();
+        return this;
     }
 
     public Expect atOnce(int num)
     {
         currentCount = num;
-        return identity();
+        return this;
     }
 
     public Expect skip()
@@ -185,7 +179,7 @@ public class Expect
     public Expect then(Consumer<Expect> fun)
     {
         fun.accept(this);
-        return identity();
+        return this;
     }
 
     public Expect repeat()
@@ -193,7 +187,7 @@ public class Expect
         SuggestParameter cur = params.get(this.currentName);
         if (cur == null) throw new IllegalStateException();
         cur.repeat = true;
-        return identity();
+        return this;
     }
 
     /**
@@ -209,9 +203,7 @@ public class Expect
                     return Parameters.expect()
                             .then(consumer)
                             .get(server, sender, split, pos)
-                            .stream()
-                            // Escape quotes
-                            .map(s -> s.replaceAll("\"", "\\\""));
+                            .stream();
                 }
         );
     }
@@ -232,7 +224,7 @@ public class Expect
     public Expect stopNamed()
     {
         until = params.get(null).completions.size();
-        return identity();
+        return this;
     }
 
     public List<String> get(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
@@ -244,8 +236,11 @@ public class Expect
         SuggestParameter param = this.params.get(lastName);
 
         String currentArg = parameters.last();
+        String currentArgRaw = parameters.lastRaw();
+
         boolean longFlag = Parameters.hasLongPrefix(currentArg);
         boolean shortFlag = Parameters.hasShortPrefix(currentArg);
+
         if (param != null && (entered.count() <= param.completions.size() || param.repeat)
                 // It notices we are entering a parameter so it won't be added to the parameters args anyway
                 && !(parameters.allowsNamed() && (longFlag || shortFlag)))
@@ -256,9 +251,9 @@ public class Expect
                         // Spaces need quotes
                         if (s.contains(" ") && !s.startsWith("\""))
                             return String.format("\"%s\"", s);
-                            // Had quotes but quoted() deleted it
-                        else if (args[args.length - 1].startsWith("\""))
-                            return "\"" + s;
+                        else if (currentArgRaw.startsWith("\""))
+                            // Had quotes but quoted() deleted it, so add it back and escape quotes
+                            return "\"" + s.replaceAll("\"", "\\\"");
                         else
                             return s;
                     })
@@ -322,7 +317,7 @@ public class Expect
         if (description.size() != currentCount)
             throw new IllegalArgumentException();
         mapLastDescriptions((i, s) -> preserveOptionality(description.get(i), s));
-        return identity();
+        return this;
     }
 
     public Expect descriptionU(String... descriptions)
@@ -340,19 +335,19 @@ public class Expect
     public Expect required()
     {
         mapLastDescriptions((i, s) -> String.format("<%s>", stripOptionality(s)));
-        return identity();
+        return this;
     }
 
     public Expect optional()
     {
         mapLastDescriptions((i, s) -> String.format("[%s]", stripOptionality(s)));
-        return identity();
+        return this;
     }
 
     public Expect naked()
     {
         mapLastDescriptions((i, s) -> stripOptionality(s));
-        return identity();
+        return this;
     }
 
     public String usage()

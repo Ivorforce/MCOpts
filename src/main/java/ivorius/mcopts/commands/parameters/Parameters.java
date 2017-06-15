@@ -12,6 +12,7 @@ import ivorius.mcopts.MCOpts;
 import ivorius.mcopts.commands.parameters.expect.Expect;
 import joptsimple.internal.Strings;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -20,6 +21,8 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Created by lukas on 30.05.17.
@@ -32,6 +35,7 @@ public class Parameters
     protected List<String> raw;
     protected Set<String> flags;
     protected ListMultimap<String, String> params;
+    protected ListMultimap<String, String> rawParams;
     protected List<String> order;
 
     protected Set<String> declaredFlags;
@@ -71,22 +75,35 @@ public class Parameters
 
     public static String[] quoted(String[] args)
     {
+        return parse(args).map(Pair::getRight).toArray(String[]::new);
+    }
+
+    public static Stream<Pair<String, String>> parse(String[] args)
+    {
         String full = Strings.join(args, " ");
         StringReader reader = new StringReader(full);
+
         StreamTokenizer tokenizer = new StreamTokenizer(reader);
         tokenizer.resetSyntax();
         tokenizer.wordChars(0, Integer.MAX_VALUE);
         tokenizer.whitespaceChars(0, ' ');
         tokenizer.quoteChar('"');
 
-        List<String> quoted = new ArrayList<>();
+        List<String> parsed = new ArrayList<>();
+        List<String> raw = new ArrayList<>();
         int last_tt = StreamTokenizer.TT_EOF;
+        int lastIndex = 0;
         try
         {
             while (tokenizer.nextToken() != StreamTokenizer.TT_EOF)
             {
                 last_tt = tokenizer.ttype;
-                quoted.add(tokenizer.sval);
+
+                parsed.add(tokenizer.sval);
+
+                int idx = Math.min(index(reader), full.length());
+                raw.add(full.substring(lastIndex, idx));
+                lastIndex = idx;
             }
         }
         catch (IOException e)
@@ -97,22 +114,30 @@ public class Parameters
 
         reader.close();
 
+        if (args.length > 0 && args[args.length - 1].length() == 0)
+        {
+            String lastRaw = raw.get(raw.size() - 1);
+            // Are we in an open quote?
+            if (!(last_tt == '\"' && lastRaw.charAt(lastRaw.length() - 1) != '\"'))
+                parsed.add(""); // We are currently writing a new param
+        }
 
+        return IntStream.range(0, parsed.size())
+                .mapToObj(i -> Pair.of(raw.get(i), parsed.get(i)));
+    }
+
+    public static int index(StringReader reader)
+    {
         try
         {
-            if (args.length > 0 && args[args.length - 1].length() == 0
-                    // ttype gives no distinction between " " and " EOF - peekc does
-                    // peekc < 0 means EOF, means quote was not completed
-                    && !(last_tt == '\"' && ReflectionHelper.findField(StreamTokenizer.class, "peekc").getInt(tokenizer) < 0)
-                    )
-                quoted.add(""); // Param was suggested, but only when we don't end in a quote
+            return ReflectionHelper.findField(StreamTokenizer.class, "next").getInt(reader);
         }
         catch (IllegalAccessException e)
         {
-            MCOpts.logger.error("Error trying to get peekc", e);
+            MCOpts.logger.error("Error trying to get next", e);
         }
 
-        return quoted.stream().toArray(String[]::new);
+        return 0;
     }
 
     @Nonnull
@@ -131,13 +156,15 @@ public class Parameters
 
     public Parameters build(String[] args)
     {
-        raw = Arrays.asList(quoted(args));
+        List<Pair<String, String>> result = parse(args).collect(Collectors.toList());
+        raw = result.stream().map(Pair::getLeft).collect(Collectors.toList());
 
         order.add(null);
 
         String curName = null;
-        for (String arg : raw)
+        for (Pair<String, String> pair : result)
         {
+            String arg = pair.getRight();
             if (allowsNamed() && hasLongPrefix(arg))
             {
                 flags.add(curName = root(arg.substring(LONG_FLAG_PREFIX.length())));
@@ -158,6 +185,7 @@ public class Parameters
                         String rest = Strings.join(curFlags.subList(i + 1, curFlags.size()), "");
                         order.add(curName);
                         params.put(curName, rest);
+                        rawParams.put(curName, pair.getLeft());
                         curName = null;
                     }
                 }
@@ -168,6 +196,7 @@ public class Parameters
 
                 order.add(curName);
                 params.put(curName, arg);
+                rawParams.put(curName, pair.getLeft());
                 curName = null;
             }
         }
@@ -239,12 +268,6 @@ public class Parameters
         return name;
     }
 
-    public List<String> raw()
-    {
-        requireBuilt();
-        return Collections.unmodifiableList(raw);
-    }
-
     public String lastName()
     {
         return order.get(order.size() - 1);
@@ -295,5 +318,24 @@ public class Parameters
         requireBuilt();
         name = root(name);
         return new Parameter<>(has(name) && !params.containsKey(name) ? -1 : 0, name, params.get(name), null);
+    }
+
+    public List<String> raw()
+    {
+        requireBuilt();
+        return Collections.unmodifiableList(raw);
+    }
+
+    public Parameter<String> raw(int idx)
+    {
+        requireBuilt();
+        return new Parameter<String>(0, null, rawParams.get(null), null).move(idx);
+    }
+
+    public Parameter<String> raw(@Nonnull String name)
+    {
+        requireBuilt();
+        name = root(name);
+        return new Parameter<>(has(name) && !rawParams.containsKey(name) ? -1 : 0, name, params.get(name), null);
     }
 }

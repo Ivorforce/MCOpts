@@ -268,7 +268,7 @@ public class Expect
                         }
 
                         // Spaces need quotes nonetheless
-                        if (suggestSplit.length > 0)
+                        if (suggestSplit.length > 1)
                             return String.format("\"%s\"", s);
                         // Don't need quotes but user started it
                         else if (lastArgStartsQuote)

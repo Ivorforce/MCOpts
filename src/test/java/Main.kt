@@ -28,6 +28,7 @@ fun main(args: Array<String>) {
 fun testBasics(expect: Expect, transform: (String) -> Array<String>) {
     val server = mock<MinecraftServer>()
     val sender = mock<ICommandSender>()
+    val pos = BlockPos(0, 0, 0)
 
     val removeQuote: (String) -> String = {
         if (it.startsWith("\""))
@@ -37,37 +38,37 @@ fun testBasics(expect: Expect, transform: (String) -> Array<String>) {
     }
 
     assertSet("Server",
-            b = expect.get(server, sender, transform("Server"), BlockPos(0, 0, 0)).map(removeQuote)
+            b = expect.get(server, sender, transform("Server"), pos).map(removeQuote)
     );
 
     assertSet("Server",
-            b = expect.get(server, sender, transform("Serv"), BlockPos(0, 0, 0)).map(removeQuote)
+            b = expect.get(server, sender, transform("Serv"), pos).map(removeQuote)
     );
 
     assertSet("Server", "World",
-            b = expect.get(server, sender, transform(""), BlockPos(0, 0, 0)).map(removeQuote)
+            b = expect.get(server, sender, transform(""), pos).map(removeQuote)
     );
 
     // Index
 
     assertSet("foo", "fee",
-            b = expect.get(server, sender, transform("Server f"), BlockPos(0, 0, 0)).map(removeQuote)
+            b = expect.get(server, sender, transform("Server f"), pos).map(removeQuote)
     );
 
     // Name
 
     assertSet("name1", "name2",
-            b = expect.get(server, sender, transform("--name n"), BlockPos(0, 0, 0)).map(removeQuote)
+            b = expect.get(server, sender, transform("--name n"), pos).map(removeQuote)
     );
 
     assertSet("Server", "World",
-            b = expect.get(server, sender, transform("--flag "), BlockPos(0, 0, 0)).map(removeQuote)
+            b = expect.get(server, sender, transform("--flag "), pos).map(removeQuote)
     );
 
     // Split
 
     assertSet("word1", "word2",
-            b = expect.get(server, sender, transform("--words \"some thing word"), BlockPos(0, 0, 0)).map(removeQuote)
+            b = expect.get(server, sender, transform("--words \"some thing word"), pos).map(removeQuote)
     );
 }
 

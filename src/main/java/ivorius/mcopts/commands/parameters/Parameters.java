@@ -47,6 +47,7 @@ public class Parameters
     {
         flags = new HashSet<>();
         params = ArrayListMultimap.create();
+        rawParams = ArrayListMultimap.create();
         order = new ArrayList<>();
 
         declaredFlags = new HashSet<>();

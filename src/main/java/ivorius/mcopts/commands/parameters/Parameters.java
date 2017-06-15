@@ -131,7 +131,7 @@ public class Parameters
     {
         try
         {
-            return ReflectionHelper.findField(StreamTokenizer.class, "next").getInt(reader);
+            return ReflectionHelper.findField(StringReader.class, "next").getInt(reader);
         }
         catch (IllegalAccessException e)
         {

@@ -176,10 +176,11 @@ public class Parameters
 
             if (!interpretes() && rawInterpreted)
             {
-                String rest = raw.stream().map(Pair::getLeft).reduce("", NaP::join);
-                raw.subList(p, raw.size()).clear();
+                List<Pair<String, String>> rest = raw.subList(p, raw.size());
+                String restString = rest.stream().map(Pair::getLeft).reduce("", NaP::join);
+                rest.clear();
                 // From CommandHandler limit -1, so we keep empty params
-                Arrays.stream(rest.split(" ", -1)).map(s -> Pair.of(s, s)).forEach(raw::add);
+                Arrays.stream(restString.split(" ", -1)).map(s -> Pair.of(s, s)).forEach(raw::add);
                 rawInterpreted = false;
                 p--; // Do this again but not interpreting
                 continue;

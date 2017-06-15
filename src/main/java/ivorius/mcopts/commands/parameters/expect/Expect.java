@@ -236,6 +236,11 @@ public class Expect
         SuggestParameter param = this.params.get(lastName);
 
         String currentArg = parameters.last();
+        String[] currentArgSplit = currentArg.split(" ");
+        String currentArgRaw = parameters.lastRaw();
+
+        boolean lastArgStartsQuote = args[args.length - 1].startsWith("\"");
+        boolean lastArgQuoted = currentArgRaw.startsWith("\"");
 
         boolean longFlag = Parameters.hasLongPrefix(currentArg);
         boolean shortFlag = Parameters.hasShortPrefix(currentArg);
@@ -245,17 +250,31 @@ public class Expect
                 && !(parameters.allowsNamed() && (longFlag || shortFlag)))
         {
             return toStrings(param.completions.get(Math.min(entered.count() - 1, param.completions.size() - 1)).complete(server, sender, parameters, pos)).stream()
+                    // Is quoted param, so escape contained quotes
+                    .map(s -> lastArgQuoted ? s.replaceAll("\"", "\\\"") : s)
                     .map(s ->
                     {
-                        // Spaces need quotes
-                        if (s.contains(" ") && !s.startsWith("\""))
+                        String[] suggestSplit = s.split(" ");
+                        labelShiftBack:
+                        for (int shiftBack = suggestSplit.length; shiftBack > 0; shiftBack--)
+                        {
+                            for (int back = 1; back <= shiftBack; back++)
+                                if (!currentArgSplit[currentArgSplit.length - 1 - back]
+                                        .equals(suggestSplit[suggestSplit.length - 1 - back]))
+                                    continue labelShiftBack;
+
+                            // Found completion going back, now just complete the closing quote
+                            return Arrays.stream(suggestSplit).skip(shiftBack).reduce("", NaP::join) + "\"";
+                        }
+
+                        // Spaces need quotes nonetheless
+                        if (suggestSplit.length > 0)
                             return String.format("\"%s\"", s);
-                        else if (args[args.length - 1].startsWith("\""))
-                            // Use args because autocomplete only works on the last entered word
-                            // Had quotes but quoted() deleted it, so add it back and escape quotes
-                            return "\"" + s.replaceAll("\"", "\\\"");
-                        else
-                            return s;
+                        // Don't need quotes but user started it
+                        else if (lastArgStartsQuote)
+                            return "\"" + s;
+
+                        return s;
                     })
                     .collect(Collectors.toCollection(ArrayList::new));
         }
@@ -359,7 +378,7 @@ public class Expect
                         .filter(e -> e.getKey().equals(e.getValue().name))
                         .flatMap(e -> flags.contains(e.getKey()) ? Stream.of(keyRepresentation(e.getKey())) : e.getValue().usage()
                                 .map(desc -> String.format("%s %s", keyRepresentation(e.getKey()), desc)))
-        ).reduce("", NaP.join());
+        ).reduce("", NaP::join);
     }
 
     protected String keyRepresentation(String key)

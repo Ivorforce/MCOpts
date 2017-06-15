@@ -14,9 +14,9 @@ import java.util.function.BinaryOperator;
  */
 public class NaP
 {
-    public static BinaryOperator<String> join()
+    public static String join(String a, String b)
     {
-        return (s, s2) -> s + " " + s2;
+        return a + " " + b;
     }
 
     public static Parameter<Integer> asInt(Parameter<String> p)

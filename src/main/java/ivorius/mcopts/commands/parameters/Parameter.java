@@ -47,13 +47,18 @@ public class Parameter<T>
         this.fun = fun;
     }
 
-    protected Parameter(int moved, String name, List<String> params, @Nullable Function<List<String>, T> fun)
+    public Parameter(int moved, String name, List<String> params, @Nullable Function<List<String>, T> fun)
     {
         this.moved = moved;
         this.name = name;
         this.params = params;
         //noinspection unchecked
         this.fun = fun != null ? fun : (Function<List<String>, T>) initial();
+    }
+
+    public static Parameter<String> makeUp(String name, String param)
+    {
+        return new Parameter<>(0, name, Collections.singletonList(param), null);
     }
 
     public String name(int index)

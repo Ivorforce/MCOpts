@@ -256,7 +256,7 @@ public class Expect
                     {
                         String[] suggestSplit = s.split(" ");
                         labelShiftBack:
-                        for (int shiftBack = suggestSplit.length; shiftBack > 0; shiftBack--)
+                        for (int shiftBack = Math.min(suggestSplit.length, currentArgSplit.length) - 1; shiftBack > 0; shiftBack--)
                         {
                             for (int back = 1; back <= shiftBack; back++)
                                 if (!currentArgSplit[currentArgSplit.length - 1 - back]

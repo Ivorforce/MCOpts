@@ -236,7 +236,6 @@ public class Expect
         SuggestParameter param = this.params.get(lastName);
 
         String currentArg = parameters.last();
-        String currentArgRaw = parameters.lastRaw();
 
         boolean longFlag = Parameters.hasLongPrefix(currentArg);
         boolean shortFlag = Parameters.hasShortPrefix(currentArg);
@@ -251,7 +250,8 @@ public class Expect
                         // Spaces need quotes
                         if (s.contains(" ") && !s.startsWith("\""))
                             return String.format("\"%s\"", s);
-                        else if (currentArgRaw.startsWith("\""))
+                        else if (args[args.length - 1].startsWith("\""))
+                            // Use args because autocomplete only works on the last entered word
                             // Had quotes but quoted() deleted it, so add it back and escape quotes
                             return "\"" + s.replaceAll("\"", "\\\"");
                         else

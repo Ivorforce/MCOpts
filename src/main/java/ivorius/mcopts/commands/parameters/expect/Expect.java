@@ -227,7 +227,7 @@ public class Expect
         return params.size();
     }
 
-    public Expect stopNamed()
+    public Expect stopInterpreting()
     {
         until = params.get(null).completions.size();
         return this;
@@ -252,7 +252,7 @@ public class Expect
 
         if (param != null && (entered.count() <= param.completions.size() || param.repeat)
                 // It notices we are entering a parameter so it won't be added to the parameters args anyway
-                && !(parameters.allowsNamed() && (longFlag || shortFlag)))
+                && !(parameters.interpretes() && (longFlag || shortFlag)))
         {
             Completer completer = param.completions.get(Math.min(entered.count() - 1, param.completions.size() - 1));
             return toStrings(completer.complete(server, sender, parameters, pos)).stream()
@@ -268,7 +268,7 @@ public class Expect
                     .collect(Collectors.toCollection(ArrayList::new));
         }
 
-        if (!parameters.allowsNamed())
+        if (!parameters.interpretes())
             return Collections.emptyList();
 
         List<String> suggest = new ArrayList<>();

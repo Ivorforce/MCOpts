@@ -173,12 +173,12 @@ public class Parameters
             String arg = pair.getRight();
 
             // Test argRaw for params since we don't want --name in "--split \"--name\"" to be a param
-            if (allowsNamed() && hasLongPrefix(argRaw))
+            if (interpretes() && hasLongPrefix(argRaw))
             {
                 flags.add(curName = root(argRaw.substring(LONG_FLAG_PREFIX.length()).trim()));
                 if (declaredFlags.contains(curName)) curName = null;
             }
-            else if (allowsNamed() && hasShortPrefix(argRaw))
+            else if (interpretes() && hasShortPrefix(argRaw))
             {
                 List<String> curFlags = argRaw.substring(SHORT_FLAG_PREFIX.length()).trim().chars().mapToObj(c -> String.valueOf((char) c)).collect(Collectors.toList());
 
@@ -203,7 +203,10 @@ public class Parameters
                 if (until > 0 && curName == null) until--;
 
                 order.add(curName);
-                params.put(curName, arg);
+                if (interpretes())
+                    params.put(curName, arg);
+                else
+                    params.putAll(curName, Arrays.asList(argRaw.trim().split(" ")));
                 rawParams.put(curName, argRaw);
                 curName = null;
             }
@@ -298,7 +301,7 @@ public class Parameters
         return new String[]{last()};
     }
 
-    public boolean allowsNamed()
+    public boolean interpretes()
     {
         return until != 0;
     }

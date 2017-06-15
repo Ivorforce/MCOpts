@@ -167,16 +167,20 @@ public class Parameters
         order.add(null);
 
         String curName = null;
+        boolean rawInterpreted = true;
         for (int p = 0, parsedSize = raw.size(); p < parsedSize; p++)
         {
             Pair<String, String> pair = raw.get(p);
             String argRaw = pair.getLeft();
             String arg = pair.getRight();
 
-            if (!interpretes() && !argRaw.equals(arg))
+            if (!interpretes() && rawInterpreted)
             {
-                raw.remove(p);
-                raw.subList(p, p).addAll(Arrays.stream(argRaw.trim().split(" ")).map(s -> Pair.of(s, s)).collect(Collectors.toList()));
+                String rest = raw.stream().map(Pair::getLeft).reduce("", NaP::join);
+                raw.subList(p, raw.size()).clear();
+                // From CommandHandler limit -1, so we keep empty params
+                Arrays.stream(rest.split(" ", -1)).map(s -> Pair.of(s, s)).forEach(raw::add);
+                rawInterpreted = false;
                 p--; // Do this again but not interpreting
                 continue;
             }

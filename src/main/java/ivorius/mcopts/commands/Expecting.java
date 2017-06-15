@@ -5,6 +5,7 @@
 
 package ivorius.mcopts.commands;
 
+import ivorius.mcopts.commands.parameters.Parameters;
 import ivorius.mcopts.commands.parameters.expect.Expect;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -20,7 +21,12 @@ import java.util.List;
  */
 public interface Expecting extends ICommand
 {
-    Expect expect();
+    default Expect expect()
+    {
+        return Parameters.expect().then(this::expect);
+    }
+
+    void expect(Expect expect);
 
     @Nonnull
     default String getUsage(ICommandSender var1)

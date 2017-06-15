@@ -12,7 +12,6 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * Created by lukas on 01.06.17.
@@ -27,13 +26,13 @@ public class DirectCommand extends SimpleCommand
         this.consumer = consumer;
     }
 
-    public DirectCommand(String name, String usage, Supplier<Expect> expector, Consumer<ICommandSender> consumer)
+    public DirectCommand(String name, String usage, Consumer<Expect> expector, Consumer<ICommandSender> consumer)
     {
         super(name, usage, expector);
         this.consumer = consumer;
     }
 
-    public DirectCommand(String name, Supplier<Expect> expector, Consumer<ICommandSender> consumer)
+    public DirectCommand(String name, Consumer<Expect> expector, Consumer<ICommandSender> consumer)
     {
         super(name, expector);
         this.consumer = consumer;

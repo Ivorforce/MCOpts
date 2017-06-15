@@ -30,7 +30,7 @@ public class CommandSplit extends CommandBase
 
     public CommandSplit()
     {
-        add(new SimpleCommand("help", () -> Parameters.expect().next(commands.keySet()).description("commands.parameters.command").required())
+        add(new SimpleCommand("help", expect -> expect.next(commands.keySet()).description("commands.parameters.command").required())
         {
             @Override
             public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException

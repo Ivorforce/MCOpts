@@ -120,7 +120,11 @@ public class Parameters
             String lastRaw = raw.size() > 0 ? raw.get(raw.size() - 1) : null;
             // Are we in an open quote?
             if (!(last_tt == '\"' && (lastRaw == null || lastRaw.charAt(lastRaw.length() - 1) != '\"')))
-                parsed.add(""); // We are currently writing a new param
+            {
+                // We are currently writing a new param
+                parsed.add("");
+                raw.add("");
+            }
         }
 
         return IntStream.range(0, parsed.size())

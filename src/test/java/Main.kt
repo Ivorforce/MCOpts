@@ -40,6 +40,10 @@ fun testBasics(expect: Expect, transform: (String) -> Array<String>, completionT
             b = expect.get(server, sender, transform("Serv"), pos).map(completionTransform)
     );
 
+    assertSet("Server",
+            b = expect.get(server, sender, transform("serv"), pos).map(completionTransform)
+    );
+
     assertSet("Server", "World",
             b = expect.get(server, sender, transform(""), pos).map(completionTransform)
     );

@@ -244,11 +244,11 @@ public class Expect
         String currentArg = parameters.last();
         String currentArgRaw = parameters.lastRaw();
 
-        boolean lastArgStartsQuote = args[args.length - 1].startsWith("\"");
-        boolean lastArgQuoted = currentArgRaw.startsWith("\"");
+        boolean lastArgStartsQuote = args[args.length - 1].startsWith("\"") && parameters.interpretes();
+        boolean lastArgQuoted = currentArgRaw.startsWith("\"") && parameters.interpretes();
 
-        boolean longFlag = Parameters.hasLongPrefix(currentArgRaw);
-        boolean shortFlag = Parameters.hasShortPrefix(currentArgRaw);
+        boolean longFlag = Parameters.hasLongPrefix(currentArgRaw) && parameters.interpretes();
+        boolean shortFlag = Parameters.hasShortPrefix(currentArgRaw) && parameters.interpretes();
 
         if (param != null && (entered.count() <= param.completions.size() || param.repeat)
                 // It notices we are entering a parameter so it won't be added to the parameters args anyway
@@ -256,15 +256,26 @@ public class Expect
         {
             Completer completer = param.completions.get(Math.min(entered.count() - 1, param.completions.size() - 1));
             return toStrings(completer.complete(server, sender, parameters, pos)).stream()
-                    // Is quoted param, so escape contained quotes
-                    .map(s -> lastArgQuoted ? escape(s) : s)
                     // Filter those that match
                     .filter(s -> CommandBase.doesStringStartWith(currentArg, s))
-                    // Take the substring, i.e. the portion we complete
-                    // Add the last entered arg back into the start so mc accepts it as completion
-                    .map(s -> args[args.length - 1] + s.substring(currentArg.length(), s.length()))
-                    // Spaces need quotes
-                    .map(s -> (s.contains(" ") && !currentArg.contains(" ")) ? "\"" + escape(s) : s)
+                    .map(s ->
+                    {
+                        int wordStartIndex = s.lastIndexOf(' ', currentArg.length());
+                        // Is quoted param, so escape contained quotes
+                        boolean startQuote = (s.contains(" ") && wordStartIndex < 0) || lastArgStartsQuote;
+
+                        // Take the substring, i.e. the portion we complete, up until the start of the word
+                        // We can't just keep the whole thing in case we had spaces before
+                        // args[args.length - 1] + s.substring(currentArg.length(), s.length())
+                        s = s.substring(wordStartIndex + 1, s.length());
+
+                        if (lastArgQuoted || startQuote)
+                            s = escape(s);
+                        if (startQuote)
+                            s = "\"" + s;
+
+                        return s;
+                    })
                     .collect(Collectors.toCollection(ArrayList::new));
         }
 
@@ -279,7 +290,7 @@ public class Expect
 
     public static String escape(String s)
     {
-        return s.replaceAll("\"", "\\\"");
+        return s.replaceAll("\"", "\\\\\"");
     }
 
     @Nonnull

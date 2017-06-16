@@ -260,9 +260,8 @@ public class Expect
                     .map(s ->
                     {
                         // If the string starts with this we can back-complete, otherwise it's a 'new suggestion'
-                        int wordStartIndex = CommandBase.doesStringStartWith(currentArg, s)
-                                ? s.lastIndexOf(' ', currentArg.length() - 1)
-                                : 0;
+                        int wordStartIndex = s.lastIndexOf(' ',
+                                CommandBase.doesStringStartWith(currentArg, s) ? currentArg.length() -1 : s.length());
                         // Is quoted param, so escape contained quotes
                         boolean startQuote = (s.contains(" ") && wordStartIndex < 0) || lastArgStartsQuote;
 

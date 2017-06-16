@@ -94,6 +94,12 @@ fun testBasics(expect: Expect, transform: (String) -> Array<String>, completionT
     assertSet("this has: \\\"too\\\"",
             b = expect.get(server, sender, transform("--spaces \"And this"), pos).map(completionTransform)
     );
+
+    // Suggest
+
+    assertSet("Server", "World",
+            b = expect.get(server, sender, transform("--suggest Server"), pos).map(completionTransform)
+    );
 }
 
 fun expect(e: Expect) = e
@@ -105,3 +111,4 @@ fun expect(e: Expect) = e
         .flag("flag")
         .named("words").words { it.any("word1", "word2") }
         .named("spaces").any("This has spaces", "And this has: \"too\"")
+        .named("suggest").nextRaw({ server, sender, parameters, pos -> listOf("Server", "World") })

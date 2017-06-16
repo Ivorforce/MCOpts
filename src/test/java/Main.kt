@@ -80,6 +80,20 @@ fun testBasics(expect: Expect, transform: (String) -> Array<String>, completionT
     assertSet("\"int1", "\"int3\"",
             b = expect.get(server, sender, transform("Server foo \""), pos).map(completionTransform)
     );
+
+    // Long
+
+    assertSet("\"This has spaces",
+            b = expect.get(server, sender, transform("--spaces \"This"), pos).map(completionTransform)
+    );
+
+    assertSet("has spaces",
+            b = expect.get(server, sender, transform("--spaces \"This has"), pos).map(completionTransform)
+    );
+
+    assertSet("this has: \\\"too\\\"",
+            b = expect.get(server, sender, transform("--spaces \"And this"), pos).map(completionTransform)
+    );
 }
 
 fun expect(e: Expect) = e
@@ -90,3 +104,4 @@ fun expect(e: Expect) = e
         .named("name").any("name1", "name2")
         .flag("flag")
         .named("words").words { it.any("word1", "word2") }
+        .named("spaces").any("This has spaces", "And this has: \"too\"")

@@ -260,7 +260,7 @@ public class Expect
                     .filter(s -> CommandBase.doesStringStartWith(currentArg, s))
                     .map(s ->
                     {
-                        int wordStartIndex = s.lastIndexOf(' ', currentArg.length());
+                        int wordStartIndex = s.lastIndexOf(' ', currentArg.length() - 1);
                         // Is quoted param, so escape contained quotes
                         boolean startQuote = (s.contains(" ") && wordStartIndex < 0) || lastArgStartsQuote;
 

@@ -163,17 +163,17 @@ public class Expect
 
     public Expect next(Object completion)
     {
-        return nextRaw((server, sender, params, pos) -> toStrings(completion));
+        return nextRaw((server, sender, params, pos) -> matching(params.last(), completion));
     }
 
     public Expect next(Completer completion)
     {
-        return nextRaw((server, sender, params, pos) -> toStrings(completion.complete(server, sender, params, pos)));
+        return nextRaw((server, sender, params, pos) -> matching(params.last(), completion.complete(server, sender, params, pos)));
     }
 
     public Expect next(Function<Parameters, ?> completion)
     {
-        return nextRaw((server, sender, params, pos) -> toStrings(completion.apply(params)));
+        return nextRaw((server, sender, params, pos) -> matching(params.last(), completion.apply(params)));
     }
 
     public Expect then(Consumer<Expect> fun)
@@ -257,10 +257,12 @@ public class Expect
             Completer completer = param.completions.get(Math.min(entered.count() - 1, param.completions.size() - 1));
             return toStrings(completer.complete(server, sender, parameters, pos)).stream()
                     // Filter those that match
-                    .filter(s -> CommandBase.doesStringStartWith(currentArg, s))
                     .map(s ->
                     {
-                        int wordStartIndex = s.lastIndexOf(' ', currentArg.length() - 1);
+                        // If the string starts with this we can back-complete, otherwise it's a 'new suggestion'
+                        int wordStartIndex = CommandBase.doesStringStartWith(currentArg, s)
+                                ? s.lastIndexOf(' ', currentArg.length() - 1)
+                                : 0;
                         // Is quoted param, so escape contained quotes
                         boolean startQuote = (s.contains(" ") && wordStartIndex < 0) || lastArgStartsQuote;
 

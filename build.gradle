@@ -17,7 +17,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'kotlin'
 apply plugin: 'maven-publish'
 
-version = "0.9.6.1"
+version = "0.9.6.2"
 group = "ivorius.mcopts" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "mcopts"
 

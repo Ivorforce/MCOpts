@@ -133,6 +133,12 @@ public class Expect
         return named(name, aliases);
     }
 
+    public Expect atOnce(int num)
+    {
+        currentCount = num;
+        return this;
+    }
+
     public Expect nextRaw(Completer completion)
     {
         SuggestParameter cur = getOrCreate(currentName);
@@ -145,10 +151,9 @@ public class Expect
         return this;
     }
 
-    public Expect atOnce(int num)
+    public Expect next(Completer completion)
     {
-        currentCount = num;
-        return this;
+        return nextRaw((server, sender, params, pos) -> matching(params.last(), completion.complete(server, sender, params, pos)));
     }
 
     public Expect skip()
@@ -156,9 +161,19 @@ public class Expect
         return nextRaw((server, sender, parameters, pos) -> Stream.of());
     }
 
+    public Expect anyRaw(Object... completion)
+    {
+        return nextRaw((server, sender, params, pos) -> toStrings(completion));
+    }
+
     public Expect any(Object... completion)
     {
         return nextRaw((server, sender, params, pos) -> matchingAny(params.last(), completion));
+    }
+
+    public Expect nextRaw(Object completion)
+    {
+        return nextRaw((server, sender, params, pos) -> toStrings(completion));
     }
 
     public Expect next(Object completion)
@@ -166,9 +181,9 @@ public class Expect
         return nextRaw((server, sender, params, pos) -> matching(params.last(), completion));
     }
 
-    public Expect next(Completer completion)
+    public Expect nextRaw(Function<Parameters, ?> completion)
     {
-        return nextRaw((server, sender, params, pos) -> matching(params.last(), completion.complete(server, sender, params, pos)));
+        return nextRaw((server, sender, params, pos) -> toStrings(completion.apply(params)));
     }
 
     public Expect next(Function<Parameters, ?> completion)

@@ -20,6 +20,7 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -161,6 +162,11 @@ public class Parameters
     public static Expect expect()
     {
         return new Expect();
+    }
+
+    public static String escape(String s)
+    {
+        return s.replaceAll("\"", Matcher.quoteReplacement("\\\""));
     }
 
     public Parameters build(String[] args)

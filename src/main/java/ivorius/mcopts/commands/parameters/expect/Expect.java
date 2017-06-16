@@ -270,7 +270,7 @@ public class Expect
                         s = s.substring(wordStartIndex + 1, s.length());
 
                         if (lastArgQuoted || startQuote)
-                            s = escape(s);
+                            s = Parameters.escape(s);
                         if (startQuote)
                             s = "\"" + s;
 
@@ -286,11 +286,6 @@ public class Expect
         suggest.addAll(remaining(currentArg, parameters, false));
         suggest.addAll(remaining(currentArg, parameters, true));
         return matching(currentArg, suggest);
-    }
-
-    public static String escape(String s)
-    {
-        return s.replaceAll("\"", "\\\\\"");
     }
 
     @Nonnull

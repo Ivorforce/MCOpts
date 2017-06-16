@@ -111,4 +111,4 @@ fun expect(e: Expect) = e
         .flag("flag")
         .named("words").words { it.any("word1", "word2") }
         .named("spaces").any("This has spaces", "And this has: \"too\"")
-        .named("suggest").nextRaw({ server, sender, parameters, pos -> listOf("Server", "World") })
+        .named("suggest").anyRaw("Server", "World")

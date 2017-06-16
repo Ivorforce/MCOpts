@@ -50,7 +50,7 @@ public class Expect
         getOrCreate(null);
     }
 
-    public static Collection<String> toStrings(Object arg)
+    public static Stream<?> unwrap(Object arg)
     {
         while (arg instanceof Optional)
             //noinspection unchecked
@@ -60,13 +60,18 @@ public class Expect
         if (arg instanceof Collection<?>)
             arg = ((Collection) arg).stream();
         if (arg instanceof Stream<?>)
-            return ((Stream<?>) arg).map(Object::toString).collect(Collectors.toSet());
-        return Collections.singletonList(arg.toString());
+            return (Stream<?>) arg;
+        return Stream.of(arg);
+    }
+
+    public static Collection<String> toStrings(Object arg)
+    {
+        return unwrap(arg).map(Object::toString).collect(Collectors.toList());
     }
 
     public static List<String> matching(String arg, Object completion)
     {
-        return CommandBase.getListOfStringsMatchingLastWord(new String[]{arg}, toStrings(completion));
+        return CommandBase.getListOfStringsMatchingLastWord(new String[]{arg}, unwrap(completion).collect(Collectors.toList()));
     }
 
     public static List<String> matchingAny(String arg, Object... suggest)
@@ -163,7 +168,7 @@ public class Expect
 
     public Expect anyRaw(Object... completion)
     {
-        return nextRaw((server, sender, params, pos) -> toStrings(completion));
+        return nextRaw((server, sender, params, pos) -> Stream.of(completion));
     }
 
     public Expect any(Object... completion)
@@ -173,7 +178,7 @@ public class Expect
 
     public Expect nextRaw(Object completion)
     {
-        return nextRaw((server, sender, params, pos) -> toStrings(completion));
+        return nextRaw((server, sender, params, pos) -> completion);
     }
 
     public Expect next(Object completion)
@@ -183,7 +188,7 @@ public class Expect
 
     public Expect nextRaw(Function<Parameters, ?> completion)
     {
-        return nextRaw((server, sender, params, pos) -> toStrings(completion.apply(params)));
+        return nextRaw((server, sender, params, pos) -> completion.apply(params));
     }
 
     public Expect next(Function<Parameters, ?> completion)

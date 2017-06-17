@@ -93,13 +93,13 @@ public class MCE
         {
             Parameter<String> commandParameter = start.apply(params);
             Optional<ICommand> other = commandParameter.tryGet().map(server1.getCommandManager().getCommands()::get);
-            return other.map(c -> c.getTabCompletions(server1, sender, commandParameter.move(1).to(NaP::varargs).get(), pos1)).orElse(Collections.emptyList());
+            return other.map(c -> c.getTabCompletionOptions(server1, sender, commandParameter.move(1).to(NaP::varargs).get(), pos1)).orElse(Collections.emptyList());
         }).descriptionU("args...");
     }
 
     public static void entity(Expect e)
     {
-        e.next((server, sender, parameters, pos) -> Arrays.stream(server.getOnlinePlayerNames())).description("commands.parameters.entity");
+        e.next((server, sender, parameters, pos) -> Arrays.stream(server.getAllUsernames())).description("commands.parameters.entity");
     }
 
     public static void rotation(Expect e)

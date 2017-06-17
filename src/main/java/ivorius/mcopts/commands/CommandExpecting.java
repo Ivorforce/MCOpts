@@ -21,8 +21,8 @@ public abstract class CommandExpecting extends CommandBase implements Expecting
 {
     @Nonnull
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
+    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
-        return Expecting.super.getTabCompletions(server, sender, args, targetPos);
+        return Expecting.super.getTabCompletionOptions(server, sender, args, targetPos);
     }
 }

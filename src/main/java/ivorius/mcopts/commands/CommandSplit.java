@@ -38,7 +38,7 @@ public class CommandSplit extends CommandBase
                 Parameters parameters = Parameters.of(args, null);
                 throw new WrongUsageException(parameters.get(0)
                         .map(commands::get, s -> new CommandNotFoundException())
-                        .optional().orElse(CommandSplit.this).getUsage(sender)
+                        .optional().orElse(CommandSplit.this).getCommandUsage(sender)
                 );
             }
         });
@@ -59,7 +59,7 @@ public class CommandSplit extends CommandBase
 
     public void add(ICommand command)
     {
-        commands.put(command.getName(), command);
+        commands.put(command.getCommandName(), command);
     }
 
     public Optional<ICommand> get(String name)
@@ -87,14 +87,14 @@ public class CommandSplit extends CommandBase
     }
 
     @Override
-    public String getUsage(ICommandSender sender)
+    public String getCommandUsage(ICommandSender sender)
     {
-        return String.format("%s %s<%s%s%s>", getName(), TextFormatting.RESET, TextFormatting.YELLOW,
+        return String.format("%s %s<%s%s%s>", getCommandName(), TextFormatting.RESET, TextFormatting.YELLOW,
                 Strings.join(Lists.newArrayList(commands.keySet()), TextFormatting.RESET + "|" + TextFormatting.YELLOW), TextFormatting.RESET);
     }
 
     @Override
-    public String getName()
+    public String getCommandName()
     {
         return name;
     }
@@ -115,7 +115,7 @@ public class CommandSplit extends CommandBase
     public ICommand validatedCommand(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         if (args.length < 1)
-            throw new WrongUsageException(getUsage(sender));
+            throw new WrongUsageException(getCommandUsage(sender));
 
         ICommand iCommand = get(args[0]).orElseThrow(CommandNotFoundException::new);
 
@@ -126,7 +126,7 @@ public class CommandSplit extends CommandBase
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
+    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
         if (args.length == 1)
             return getListOfStringsMatchingLastWord(args, commands.entrySet().stream()
@@ -135,7 +135,7 @@ public class CommandSplit extends CommandBase
                     .collect(Collectors.toList())
             );
         return get(args[0]).filter(e -> e.checkPermission(server, sender))
-                .map(c -> c.getTabCompletions(server, sender, splitParameters(args), targetPos))
+                .map(c -> c.getTabCompletionOptions(server, sender, splitParameters(args), targetPos))
                 .orElse(Collections.emptyList());
     }
 

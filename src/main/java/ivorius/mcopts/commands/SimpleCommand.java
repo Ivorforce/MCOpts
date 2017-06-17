@@ -60,7 +60,7 @@ public abstract class SimpleCommand extends CommandExpecting
     }
 
     @Override
-    public String getName()
+    public String getCommandName()
     {
         return name;
     }
@@ -73,13 +73,13 @@ public abstract class SimpleCommand extends CommandExpecting
     }
 
     @Override
-    public String getUsage(ICommandSender sender)
+    public String getCommandUsage(ICommandSender sender)
     {
         return String.format("%s %s", name, usage != null ? usage : expect().usage());
     }
 
     @Override
-    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
+    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos)
     {
         return expect().get(server, sender, args, targetPos);
     }

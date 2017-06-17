@@ -29,13 +29,13 @@ public interface Expecting extends ICommand
     void expect(Expect expect);
 
     @Nonnull
-    default String getUsage(ICommandSender var1)
+    default String getCommandUsage(ICommandSender var1)
     {
-        return String.format("%s %s", getName(), expect().usage());
+        return String.format("%s %s", getCommandName(), expect().usage());
     }
 
     @Nonnull
-    default List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
+    default List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
     {
         return expect().get(server, sender, args, pos);
     }

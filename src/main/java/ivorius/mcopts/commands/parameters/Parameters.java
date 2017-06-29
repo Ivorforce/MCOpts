@@ -10,7 +10,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.primitives.Doubles;
 import ivorius.mcopts.MCOpts;
 import ivorius.mcopts.commands.parameters.expect.Expect;
-import joptsimple.internal.Strings;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -83,7 +82,7 @@ public class Parameters
 
     public static Stream<Pair<String, String>> parse(String[] args)
     {
-        String full = Strings.join(args, " ");
+        String full = String.join(" ", args);
         StringReader reader = new StringReader(full);
 
         StreamTokenizer tokenizer = new StreamTokenizer(reader);
@@ -213,7 +212,7 @@ public class Parameters
                     else if (curFlags.size() > i + 1)
                     {
                         // Direct input, e.g. -fusers/foo/file.png
-                        String rest = Strings.join(curFlags.subList(i + 1, curFlags.size()), "");
+                        String rest = String.join("", curFlags.subList(i + 1, curFlags.size()));
                         order.add(curName);
                         params.put(curName, rest);
                         rawParams.put(curName, argRaw);

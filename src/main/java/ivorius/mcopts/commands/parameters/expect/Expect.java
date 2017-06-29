@@ -12,7 +12,6 @@ import ivorius.mcopts.commands.parameters.NaP;
 import ivorius.mcopts.commands.parameters.Parameter;
 import ivorius.mcopts.commands.parameters.Parameters;
 import ivorius.mcopts.translation.Translations;
-import joptsimple.internal.Strings;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -418,7 +417,7 @@ public class Expect
 
         aliases.add(0, key);
 
-        return Parameters.prefix(shortParams.contains(key)) + Strings.join(aliases, "|");
+        return Parameters.prefix(shortParams.contains(key)) + String.join("|", aliases);
     }
 
     public interface Completer

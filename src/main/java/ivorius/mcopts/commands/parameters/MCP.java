@@ -64,7 +64,7 @@ public class MCP
     public static Function<Parameter<String>, Parameter<WorldServer>> dimension(MinecraftServer server, ICommandSender sender)
     {
         return p -> p.filter(d -> !d.equals("~"), null)
-                .map(CommandBase::parseInt).map(server::worldServerForDimension, t -> MCOpts.translations.commandException("commands.parameters.dimension.invalid"))
+                .map(CommandBase::parseInt).map(server::getWorld, t -> MCOpts.translations.commandException("commands.parameters.dimension.invalid"))
                 .orElse((WorldServer) sender.getEntityWorld());
     }
 

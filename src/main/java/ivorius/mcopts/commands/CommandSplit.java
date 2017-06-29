@@ -7,7 +7,6 @@ package ivorius.mcopts.commands;
 
 import com.google.common.collect.Lists;
 import ivorius.mcopts.commands.parameters.Parameters;
-import joptsimple.internal.Strings;
 import net.minecraft.command.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -90,7 +89,7 @@ public class CommandSplit extends CommandBase
     public String getCommandUsage(ICommandSender sender)
     {
         return String.format("%s %s<%s%s%s>", getCommandName(), TextFormatting.RESET, TextFormatting.YELLOW,
-                Strings.join(Lists.newArrayList(commands.keySet()), TextFormatting.RESET + "|" + TextFormatting.YELLOW), TextFormatting.RESET);
+                String.join(TextFormatting.RESET + "|" + TextFormatting.YELLOW, commands.keySet()), TextFormatting.RESET);
     }
 
     @Override

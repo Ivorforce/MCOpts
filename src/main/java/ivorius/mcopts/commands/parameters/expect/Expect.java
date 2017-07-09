@@ -46,6 +46,8 @@ public class Expect
     protected int currentCount;
     protected int until = -1;
 
+    protected boolean or;
+
     public Expect()
     {
         getOrCreate(null);
@@ -53,6 +55,10 @@ public class Expect
 
     public static Stream<?> unwrap(Object arg)
     {
+        // Especially for or() calls
+        if (arg instanceof Pair)
+            arg = Stream.concat(unwrap(((Pair) arg).getLeft()),
+                    unwrap(((Pair) arg).getRight()));
         while (arg instanceof Optional)
             //noinspection unchecked
             arg = ((Optional) arg).orElse(Collections.emptyList());
@@ -148,11 +154,20 @@ public class Expect
     public Expect nextRaw(Completer completion)
     {
         SuggestParameter cur = getOrCreate(currentName);
-        order.add(currentName);
-        cur.next(completion);
 
-        currentCount = 1;
-        optional(); // All params are expected to be optional by default
+        if (or)
+        {
+            cur.or(completion);
+            or = false;
+        }
+        else
+        {
+            order.add(currentName);
+            cur.next(completion);
+
+            currentCount = 1;
+            optional(); // All params are expected to be optional by default
+        }
 
         return this;
     }
@@ -257,6 +272,13 @@ public class Expect
     {
         Expect inner = splitInner(expect -> expect.then(consumer).repeat());
         descriptionU(Iterables.getLast(inner.mapLastDescriptions((i, s) -> s)));
+        return this;
+    }
+
+    public Expect or()
+    {
+        if (or) throw new IllegalStateException();
+        or = true;
         return this;
     }
 
@@ -461,6 +483,14 @@ public class Expect
         {
             completions.add(completion);
             descriptions.add(String.format("[%d]", completions.size()));
+            return this;
+        }
+
+        public SuggestParameter or(Completer completion)
+        {
+            Completer prev = completions.remove(completions.size() - 1);
+            completions.add((server, sender, parameters, pos) ->
+                    Pair.of(prev.complete(server, sender, parameters, pos), completion.complete(server, sender, parameters, pos)));
             return this;
         }
 

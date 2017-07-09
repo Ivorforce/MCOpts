@@ -21,13 +21,13 @@ fun main(args: Array<String>) {
     val expect = expect(Parameters.expect())
             .named("split").split { expect(it) }
 
-    testBasics(expect, { it.split(" ").toTypedArray() }) { it }
-    testBasics(expect, { "--split \"${it.replace("\"", "\\\"")}".split(" ").toTypedArray() }, {
+    testExpect(expect, { it.split(" ").toTypedArray() }) { it }
+    testExpect(expect, { "--split \"${it.replace("\"", "\\\"")}".split(" ").toTypedArray() }, {
         (if (it.startsWith("\"")) it.substring(1) else it).replace("\\\"", "\"")
     })
 }
 
-fun testBasics(expect: Expect, transform: (String) -> Array<String>, completionTransform: (String) -> String) {
+fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionTransform: (String) -> String) {
     val server = mock<MinecraftServer>()
     val sender = mock<ICommandSender>()
     val pos = BlockPos(0, 0, 0)

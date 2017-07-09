@@ -32,74 +32,48 @@ fun testBasics(expect: Expect, transform: (String) -> Array<String>, completionT
     val sender = mock<ICommandSender>()
     val pos = BlockPos(0, 0, 0)
 
-    assertSet("Server",
-            b = expect.get(server, sender, transform("Server"), pos).map(completionTransform)
-    );
+    val from : (String) -> List<String> = { expect.get(server, sender, transform(it), pos).map(completionTransform) };
 
-    assertSet("Server",
-            b = expect.get(server, sender, transform("Serv"), pos).map(completionTransform)
-    );
+    assertSet("Server", b = from("Server"));
 
-    assertSet("Server",
-            b = expect.get(server, sender, transform("serv"), pos).map(completionTransform)
-    );
+    assertSet("Server", b = from("Serv"));
 
-    assertSet("Server", "World",
-            b = expect.get(server, sender, transform(""), pos).map(completionTransform)
-    );
+    assertSet("Server", b = from("serv"));
+
+    assertSet("Server", "World", b = from(""));
 
     // Index
 
-    assertSet("foo", "fee",
-            b = expect.get(server, sender, transform("Server f"), pos).map(completionTransform)
-    );
+    assertSet("foo", "fee", b = from("Server f"));
 
     // Name
 
-    assertSet("name1", "name2",
-            b = expect.get(server, sender, transform("--name n"), pos).map(completionTransform)
-    );
+    assertSet("name1", "name2", b = from("--name n"));
 
-    assertSet("Server", "World",
-            b = expect.get(server, sender, transform("--flag "), pos).map(completionTransform)
-    );
+    assertSet("Server", "World", b = from("--flag "));
 
     // Split
 
-    assertSet("word1", "word2",
-            b = expect.get(server, sender, transform("--words \"some thing word"), pos).map(completionTransform)
-    );
+    assertSet("word1", "word2", b = from("--words \"some thing word"));
 
-    assertSet("word1", "word2",
-            b = expect.get(server, sender, transform("--words \"some thing word"), pos).map(completionTransform)
-    );
+    assertSet("word1", "word2", b = from("--words \"some thing word"));
 
     // Interpret
 
     // We'd expect quotes at the start but it's easier this way
-    assertSet("\"int1", "\"int3\"",
-            b = expect.get(server, sender, transform("Server foo \""), pos).map(completionTransform)
-    );
+    assertSet("\"int1", "\"int3\"", b = from("Server foo \""));
 
     // Long
 
-    assertSet("\"This has spaces",
-            b = expect.get(server, sender, transform("--spaces \"This"), pos).map(completionTransform)
-    );
+    assertSet("\"This has spaces", b = from("--spaces \"This"));
 
-    assertSet("has spaces",
-            b = expect.get(server, sender, transform("--spaces \"This has"), pos).map(completionTransform)
-    );
+    assertSet("has spaces", b = from("--spaces \"This has"));
 
-    assertSet("this has: \\\"too\\\"",
-            b = expect.get(server, sender, transform("--spaces \"And this"), pos).map(completionTransform)
-    );
+    assertSet("this has: \\\"too\\\"", b = from("--spaces \"And this"));
 
     // Suggest
 
-    assertSet("Server", "World",
-            b = expect.get(server, sender, transform("--suggest Server"), pos).map(completionTransform)
-    );
+    assertSet("Server", "World", b = from("--suggest Server"));
 }
 
 fun expect(e: Expect) = e

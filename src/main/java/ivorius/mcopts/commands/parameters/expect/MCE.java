@@ -87,9 +87,9 @@ public class MCE
         e.next((server, sender, args, pos) -> server.getCommandManager().getCommands().keySet()).description("commands.parameters.command");
     }
 
-    public static Consumer<Expect> commandArguments(Function<Parameters, Parameter<String>> start)
+    public static void commandArguments(Expect e, Function<Parameters, Parameter<String>> start)
     {
-        return e -> e.nextRaw((server1, sender, params, pos1) ->
+        e.nextRaw((server1, sender, params, pos1) ->
         {
             Parameter<String> commandParameter = start.apply(params);
             Optional<ICommand> other = commandParameter.tryGet().map(server1.getCommandManager().getCommands()::get);

@@ -107,7 +107,7 @@ public class Expect
         this.params.forEach((key, param) ->
         {
             if (Objects.equals(param.name, key))
-                restrict.put(key, param.completions.size());
+                restrict.put(key, param.repeat ? -1 : param.completions.size());
         });
 
         parameters.restrict(restrict);

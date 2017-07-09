@@ -70,11 +70,9 @@ public class MCP
                 .map(CommandBase::parseInt).map(server::worldServerForDimension, t -> MCOpts.translations.commandException("commands.parameters.dimension.invalid"));
     }
 
-    @Deprecated
     public static Function<Parameter<String>, Parameter<WorldServer>> dimension(MinecraftServer server, ICommandSender sender)
     {
-        return p -> dimension(p, server)
-                .orElse((WorldServer) sender.getEntityWorld());
+        return p -> dimension(p, server).orElse((WorldServer) sender.getEntityWorld());
     }
 
     public static Parameter<Block> block(Parameter<String> p, ICommandSender commandSender)

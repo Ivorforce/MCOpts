@@ -99,6 +99,9 @@ fun testParameters(transform: (String) -> Parameters) {
     assertEquals(from("Test --flag").has("flag"), true);
     assertEquals(from("--flag Test").has("flag"), true);
 
+    assertEquals(from("Server --flag")["flag"].isSet, true);
+    assertEquals(from("Server")["flag"].isSet, false);
+
     // Named
 
     assertEquals(extract(from("--name name1")["name"]), "name1");

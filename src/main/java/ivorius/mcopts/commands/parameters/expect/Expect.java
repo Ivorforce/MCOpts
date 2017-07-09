@@ -6,6 +6,7 @@
 package ivorius.mcopts.commands.parameters.expect;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import ivorius.mcopts.commands.parameters.NaP;
@@ -209,12 +210,11 @@ public class Expect
         return this;
     }
 
-    /**
-     * For quoted arguments with spaces
-     */
-    public Expect split(Consumer<Expect> consumer)
+    public Expect splitInner(Consumer<Expect> consumer)
     {
-        return nextRaw((server, sender, parameters, pos) ->
+        Expect inner = Parameters.expect().then(consumer);
+
+        nextRaw((server, sender, parameters, pos) ->
                 {
                     // From CommandHandler
                     String last = parameters.last();
@@ -223,14 +223,24 @@ public class Expect
                     int lastSplit = last.lastIndexOf(" ");
                     String lastStart = lastSplit >= 0 ? last.substring(0, lastSplit) + " " : "";
 
-                    return Parameters.expect()
-                            .then(consumer)
+                    return inner
                             .get(server, sender, split, pos)
                             .stream()
                             .map(s -> lastStart + s)
                             ;
                 }
         );
+
+        return inner;
+    }
+
+    /**
+     * For quoted arguments with spaces
+     */
+    public Expect split(Consumer<Expect> consumer)
+    {
+        splitInner(consumer);
+        return this;
     }
 
     /**
@@ -238,7 +248,9 @@ public class Expect
      */
     public Expect words(Consumer<Expect> consumer)
     {
-        return split(expect -> expect.then(consumer).repeat());
+        Expect inner = splitInner(expect -> expect.then(consumer).repeat());
+        descriptionU(Iterables.getLast(inner.mapLastDescriptions((i, s) -> s)));
+        return this;
     }
 
     public int index()
@@ -321,7 +333,7 @@ public class Expect
         );
     }
 
-    protected void mapLastDescriptions(BiFunction<Integer, String, String> fun)
+    protected List<String> mapLastDescriptions(BiFunction<Integer, String, String> fun)
     {
         List<String> relevant = order.subList(order.size() - currentCount, order.size());
         int[] idx = new int[1];
@@ -333,6 +345,7 @@ public class Expect
         relevant.stream().forEach(s ->
                 params.get(s).descriptions.add(last.remove(last.size() - 1))
         );
+        return relevant;
     }
 
     protected String stripOptionality(String description)

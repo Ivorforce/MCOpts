@@ -1,4 +1,5 @@
 import com.google.common.collect.Sets
+import ivorius.mcopts.commands.parameters.Parameter
 import ivorius.mcopts.commands.parameters.Parameters
 import ivorius.mcopts.commands.parameters.expect.Expect
 import net.minecraft.command.ICommandSender
@@ -25,6 +26,7 @@ fun main(args: Array<String>) {
     testExpect(expect, { "--split \"${it.replace("\"", "\\\"")}".split(" ").toTypedArray() }, {
         (if (it.startsWith("\"")) it.substring(1) else it).replace("\\\"", "\"")
     })
+    testParameters(expect);
 }
 
 fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionTransform: (String) -> String) {
@@ -74,6 +76,28 @@ fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionT
     // Suggest
 
     assertSet("Server", "World", b = from("--suggest Server"));
+}
+
+fun testParameters(expect: Expect) {
+    val from : (String) -> Parameters = { Parameters.of(it.split(" ").toTypedArray(), { expect.declare(it) }) };
+
+    val extract : (Parameter<String>) -> String = { it.optional().orElse(null) }
+
+    // Index
+
+    assertEquals(extract(from("Server")[0]), "Server");
+    assertEquals(extract(from("Test")[0]), "Test");
+
+    // Flag
+
+    assertEquals(from("--flag").has("flag"), true);
+    assertEquals(from("Test --flag").has("flag"), true);
+    assertEquals(from("--flag Test").has("flag"), true);
+
+    // Named
+
+    assertEquals(extract(from("--name name1")["name"]), "name1");
+    assertEquals(extract(from("--name Test")["name"]), "Test");
 }
 
 fun expect(e: Expect) = e

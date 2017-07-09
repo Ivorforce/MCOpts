@@ -16,6 +16,20 @@ inline fun assertEquals(a: Any, b: Any) = assert(a == b) { "$b is not $a" }
 
 inline fun assertSet(vararg a: Any, b: Collection<*>) = assertEquals(setOf(*a), Sets.newHashSet(b))
 
+fun assertThrows(a: () -> Unit, b: Class<*>) {
+    try {
+        a.invoke();
+    }
+    catch (e: Exception){
+        if (b.isAssignableFrom(e.javaClass))
+            return;
+
+        throw AssertionError("function throwed $e instead of $b");
+    }
+
+    throw AssertionError("function did not throw " + b);
+}
+
 fun main(args: Array<String>) {
 
     // Words
@@ -41,50 +55,50 @@ fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionT
 
     val from : (String) -> List<String> = { expect.get(server, sender, transform(it), pos).map(completionTransform) };
 
-    assertSet("Server", b = from("Server"));
+    assertSet("Server", b = from("Server"))
 
-    assertSet("Server", b = from("Serv"));
+    assertSet("Server", b = from("Serv"))
 
-    assertSet("Server", b = from("serv"));
+    assertSet("Server", b = from("serv"))
 
-    assertSet("Server", "World", b = from(""));
+    assertSet("Server", "World", b = from(""))
 
     // Index
 
-    assertSet("foo", "fee", b = from("Server f"));
+    assertSet("foo", "fee", b = from("Server f"))
 
     // Name
 
-    assertSet("name1", "name2", b = from("--name n"));
+    assertSet("name1", "name2", b = from("--name n"))
 
-    assertSet("Server", "World", b = from("--flag "));
+    assertSet("Server", "World", b = from("--flag "))
 
     // Split
 
-    assertSet("word1", "word2", b = from("--words \"some thing word"));
+    assertSet("word1", "word2", b = from("--words \"some thing word"))
 
-    assertSet("word1", "word2", b = from("--words \"some thing word"));
+    assertSet("word1", "word2", b = from("--words \"some thing word"))
 
     // Interpret
 
     // We'd expect quotes at the start but it's easier this way
-    assertSet("\"int1", "\"int3\"", b = from("Server foo \""));
+    assertSet("\"int1", "\"int3\"", b = from("Server foo \""))
 
     // Long
 
-    assertSet("\"This has spaces", b = from("--spaces \"This"));
+    assertSet("\"This has spaces", b = from("--spaces \"This"))
 
-    assertSet("has spaces", b = from("--spaces \"This has"));
+    assertSet("has spaces", b = from("--spaces \"This has"))
 
-    assertSet("this has: \\\"too\\\"", b = from("--spaces \"And this"));
+    assertSet("this has: \\\"too\\\"", b = from("--spaces \"And this"))
 
     // Suggest
 
-    assertSet("Server", "World", b = from("--suggest Server"));
+    assertSet("Server", "World", b = from("--suggest Server"))
 
     // Any
 
-    assertSet("foo", "fee", b = from("--or f"));
+    assertSet("foo", "fee", b = from("--or f"))
 }
 
 fun testParameters(transform: (String) -> Parameters) {
@@ -94,32 +108,40 @@ fun testParameters(transform: (String) -> Parameters) {
 
     // Index
 
-    assertEquals(extract(from("Server")[0]), "Server");
-    assertEquals(extract(from("Test")[0]), "Test");
+    assertEquals(extract(from("Server")[0]), "Server")
+    assertEquals(extract(from("Test")[0]), "Test")
 
     // Has
 
-    assertEquals(from("Server foo")[0].has(2), true);
-    assertEquals(from("Server foo")[0].has(3), false);
+    assertEquals(from("Server foo")[0].has(2), true)
+    assertEquals(from("Server foo")[0].has(3), false)
 
     // Move
 
-    assertEquals(extract(from("Server foo")[0].move(1)), "foo");
-    assertEquals(from("Server foo")[0].move(2).has(1), false);
+    assertEquals(extract(from("Server foo")[0].move(1)), "foo")
+    assertEquals(from("Server foo")[0].move(2).has(1), false)
 
     // Flag
 
-    assertEquals(from("--flag").has("flag"), true);
-    assertEquals(from("Test --flag").has("flag"), true);
-    assertEquals(from("--flag Test").has("flag"), true);
+    assertEquals(from("--flag").has("flag"), true)
+    assertEquals(from("Test --flag").has("flag"), true)
+    assertEquals(from("--flag Test").has("flag"), true)
 
-    assertEquals(from("Server --flag")["flag"].isSet, true);
-    assertEquals(from("Server")["flag"].isSet, false);
+    assertEquals(from("Server --flag")["flag"].isSet, true)
+    assertEquals(from("Server")["flag"].isSet, false)
+
+    assertEquals(from("-f").has("flag"), true)
 
     // Named
 
-    assertEquals(extract(from("--name name1")["name"]), "name1");
-    assertEquals(extract(from("--name Test")["name"]), "Test");
+    assertEquals(extract(from("--name name1")["name"]), "name1")
+    assertEquals(extract(from("--name Test")["name"]), "Test")
+
+    // Unknown
+
+    assertThrows({ from("--asjdkla") }, Parameters.ParameterUnknownException::class.java)
+    assertThrows({ from("-fs") }, Parameters.ParameterUnknownException::class.java)
+    assertThrows({ from("--name a --name b") }, Parameters.ParameterTooManyArgumentsException::class.java)
 }
 
 fun expect(e: Expect) = e
@@ -128,7 +150,7 @@ fun expect(e: Expect) = e
         .stopInterpreting()
         .any("\"int1", "int2\"", "\"int3\"")
         .named("name").any("name1", "name2")
-        .flag("flag")
+        .flag("flag", "f")
         .named("words").words { it.any("word1", "word2") }
         .named("spaces").any("This has spaces", "And this has: \"too\"")
         .named("suggest").anyRaw("Server", "World")

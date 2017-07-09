@@ -9,6 +9,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import ivorius.mcopts.commands.parameters.NaP;
 import ivorius.mcopts.commands.parameters.Parameter;
 import ivorius.mcopts.commands.parameters.Parameters;
@@ -86,7 +88,7 @@ public class Expect
         return CommandBase.getListOfStringsMatchingLastWord(new String[]{arg}, Arrays.asList(suggest));
     }
 
-    public Parameters declare(Parameters parameters)
+    public Parameters declareLenient(Parameters parameters)
     {
         parameters.flags(flags);
         this.params.forEach((key, param) ->
@@ -96,6 +98,21 @@ public class Expect
         });
         parameters.until(until);
         return parameters;
+    }
+
+    public Parameters declare(Parameters parameters)
+    {
+        TObjectIntMap<String> restrict = new TObjectIntHashMap<>();
+
+        this.params.forEach((key, param) ->
+        {
+            if (Objects.equals(param.name, key))
+                restrict.put(key, param.completions.size());
+        });
+
+        parameters.restrict(restrict);
+
+        return declareLenient(parameters);
     }
 
     @Nonnull
@@ -295,7 +312,7 @@ public class Expect
 
     public List<String> get(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
     {
-        Parameters parameters = Parameters.of(args, this::declare);
+        Parameters parameters = Parameters.ofLenient(args, this::declare);
 
         String lastName = parameters.lastName();
         Parameter entered = lastName != null ? parameters.get(lastName) : parameters.get(0);
@@ -321,7 +338,7 @@ public class Expect
                     {
                         // If the string starts with this we can back-complete, otherwise it's a 'new suggestion'
                         int wordStartIndex = s.lastIndexOf(' ',
-                                CommandBase.doesStringStartWith(currentArg, s) ? currentArg.length() -1 : s.length());
+                                CommandBase.doesStringStartWith(currentArg, s) ? currentArg.length() - 1 : s.length());
                         // Is quoted param, so escape contained quotes
                         boolean startQuote = (s.contains(" ") && wordStartIndex < 0) || lastArgStartsQuote;
 

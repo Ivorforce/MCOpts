@@ -12,6 +12,7 @@ import ivorius.mcopts.commands.parameters.Parameters;
 import net.minecraft.block.Block;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
+import net.minecraft.item.Item;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.DimensionManager;
 
@@ -82,6 +83,11 @@ public class MCE
         e.next(Block.REGISTRY.getKeys()).description("commands.parameters.block");
     }
 
+    public static void item(Expect e)
+    {
+        e.next(Item.REGISTRY.getKeys()).description("commands.parameters.item");
+    }
+
     public static void command(Expect e)
     {
         e.next((server, sender, args, pos) -> server.getCommandManager().getCommands().keySet()).description("commands.parameters.command");
@@ -100,6 +106,11 @@ public class MCE
     public static void entity(Expect e)
     {
         e.next((server, sender, parameters, pos) -> Arrays.stream(server.getOnlinePlayerNames())).description("commands.parameters.entity");
+    }
+
+    public static void player(Expect e)
+    {
+        e.next((server, sender, parameters, pos) -> Arrays.stream(server.getOnlinePlayerNames())).description("commands.parameters.player");
     }
 
     public static void rotation(Expect e)

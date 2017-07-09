@@ -93,6 +93,11 @@ fun testParameters(transform: (String) -> Parameters) {
     assertEquals(extract(from("Server")[0]), "Server");
     assertEquals(extract(from("Test")[0]), "Test");
 
+    // Has
+
+    assertEquals(from("Server foo")[0].has(2), true);
+    assertEquals(from("Server foo")[0].has(3), false);
+
     // Flag
 
     assertEquals(from("--flag").has("flag"), true);

@@ -259,6 +259,7 @@ public class Parameter<T>
     {
         return new Parameter<>(this, p ->
         {
+            get(p, 0); // Require a list size of > 0, if not required the user can just use optional()
             List<T> list = new ArrayList<>(p.size());
             for (String param : p) list.add(function().apply(Collections.singletonList(param)));
             return list;

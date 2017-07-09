@@ -56,11 +56,8 @@ fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionT
     val from : (String) -> List<String> = { expect.get(server, sender, transform(it), pos).map(completionTransform) };
 
     assertSet("Server", b = from("Server"))
-
     assertSet("Server", b = from("Serv"))
-
     assertSet("Server", b = from("serv"))
-
     assertSet("Server", "World", b = from(""))
 
     // Index
@@ -70,13 +67,15 @@ fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionT
     // Name
 
     assertSet("name1", "name2", b = from("--name n"))
-
     assertSet("Server", "World", b = from("--flag "))
+
+    // Repeat
+
+    assertSet("param2", b = from("--rep a --rep b --rep "))
 
     // Split
 
     assertSet("word1", "word2", b = from("--words \"some thing word"))
-
     assertSet("word1", "word2", b = from("--words \"some thing word"))
 
     // Interpret
@@ -87,16 +86,14 @@ fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionT
     // Long
 
     assertSet("\"This has spaces", b = from("--spaces \"This"))
-
     assertSet("has spaces", b = from("--spaces \"This has"))
-
     assertSet("this has: \\\"too\\\"", b = from("--spaces \"And this"))
 
     // Suggest
 
     assertSet("Server", "World", b = from("--suggest Server"))
 
-    // Any
+    // Or
 
     assertSet("foo", "fee", b = from("--or f"))
 }
@@ -142,6 +139,7 @@ fun testParameters(transform: (String) -> Parameters) {
     assertThrows({ from("--asjdkla") }, Parameters.ParameterUnknownException::class.java)
     assertThrows({ from("-fs") }, Parameters.ParameterUnknownException::class.java)
     assertThrows({ from("--name a --name b") }, Parameters.ParameterTooManyArgumentsException::class.java)
+    from("--rep a --rep b --rep c") // Don't throw because repeat()
 }
 
 fun expect(e: Expect) = e
@@ -150,6 +148,7 @@ fun expect(e: Expect) = e
         .stopInterpreting()
         .any("\"int1", "int2\"", "\"int3\"")
         .named("name").any("name1", "name2")
+        .named("rep").any("param1").any("param2").repeat()
         .flag("flag", "f")
         .named("words").words { it.any("word1", "word2") }
         .named("spaces").any("This has spaces", "And this has: \"too\"")

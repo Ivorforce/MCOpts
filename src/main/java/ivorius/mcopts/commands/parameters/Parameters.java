@@ -9,8 +9,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.primitives.Doubles;
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import ivorius.mcopts.MCOpts;
 import ivorius.mcopts.commands.parameters.expect.Expect;
+import net.minecraft.command.CommandException;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -35,30 +38,26 @@ public class Parameters
 
     protected List<Pair<String, String>> raw;
 
-    protected Set<String> flags;
-    protected ListMultimap<String, String> params;
-    protected ListMultimap<String, String> rawParams;
-    protected List<String> order;
+    protected Set<String> flags = new HashSet<>();
+    protected ListMultimap<String, String> params = ArrayListMultimap.create();
+    protected ListMultimap<String, String> rawParams = ArrayListMultimap.create();
+    protected List<String> order = new ArrayList<>();
 
-    protected Set<String> declaredFlags;
-    protected Map<String, String> alias;
+    protected TObjectIntMap<String> restrictFlags = new TObjectIntHashMap<>();
+    protected Set<String> declaredFlags = new HashSet<>();
+    protected Map<String, String> alias = new HashMap<>();
     protected int until = -1;
 
-    public Parameters()
-    {
-        flags = new HashSet<>();
-        params = ArrayListMultimap.create();
-        rawParams = ArrayListMultimap.create();
-        order = new ArrayList<>();
-
-        declaredFlags = new HashSet<>();
-        alias = new HashMap<>();
-    }
-
-    public static Parameters of(String[] args, Function<Parameters, Parameters> c)
+    public static Parameters of(String[] args, Function<Parameters, Parameters> c) throws CommandException
     {
         Parameters parameters = new Parameters();
         return (c != null ? c.apply(parameters) : parameters).build(args);
+    }
+
+    public static Parameters ofLenient(String[] args, Function<Parameters, Parameters> c)
+    {
+        Parameters parameters = new Parameters();
+        return (c != null ? c.apply(parameters) : parameters).buildLenient(args);
     }
 
     public static String prefix(boolean isShort)
@@ -169,7 +168,24 @@ public class Parameters
         return s.replaceAll("\"", Matcher.quoteReplacement("\\\""));
     }
 
-    public Parameters build(String[] args)
+    public Parameters build(String[] args) throws CommandException
+    {
+        return buildRaw(args, false);
+    }
+
+    public Parameters buildLenient(String[] args)
+    {
+        try
+        {
+            return buildRaw(args, true);
+        }
+        catch (CommandException e)
+        {
+            throw new InternalError();
+        }
+    }
+
+    public Parameters buildRaw(String[] args, boolean lenient) throws CommandException
     {
         raw = new ArrayList<>(parse(args).collect(Collectors.toList()));
 
@@ -199,7 +215,8 @@ public class Parameters
             if (interpretes() && hasLongPrefix(argRaw))
             {
                 flags.add(curName = root(argRaw.substring(LONG_FLAG_PREFIX.length()).trim()));
-                if (declaredFlags.contains(curName)) curName = null;
+                if (!lenient) testAdd(curName);
+                    if (declaredFlags.contains(curName)) curName = null;
             }
             else if (interpretes() && hasShortPrefix(argRaw))
             {
@@ -208,6 +225,7 @@ public class Parameters
                 for (int i = 0; i < curFlags.size(); i++)
                 {
                     flags.add(curName = root(curFlags.get(i)));
+                    if (!lenient) testAdd(curName);
                     if (declaredFlags.contains(curName))
                         curName = null;
                     else if (curFlags.size() > i + 1)
@@ -235,6 +253,16 @@ public class Parameters
         }
 
         return this;
+    }
+
+    protected void testAdd(String name) throws CommandException
+    {
+        if (!restrictFlags.containsKey(name))
+            throw ParameterUnknownException.create(name);
+
+        int restrict = restrictFlags.get(name);
+        if (!declaredFlags.contains(name) && (restrict >= 0 && params.get(name).size() >= restrict))
+            throw ParameterTooManyArgumentsException.create(name);
     }
 
     public void requireBuilt() throws IllegalStateException
@@ -290,6 +318,12 @@ public class Parameters
     public Parameters until(int until)
     {
         this.until = until;
+        return this;
+    }
+
+    public Parameters restrict(TObjectIntMap<String> flags)
+    {
+        restrictFlags.putAll(flags);
         return this;
     }
 
@@ -356,7 +390,7 @@ public class Parameters
     {
         requireBuilt();
         name = root(name);
-        return new Parameter<>(has(name) && !params.containsKey(name) ? 0 : -1, name, params.get(name), null);
+        return new Parameter<>(!has(name) && !params.containsKey(name) ? -1 : 0, name, params.get(name), null);
     }
 
     public List<Pair<String, String>> raw()
@@ -375,6 +409,50 @@ public class Parameters
     {
         requireBuilt();
         name = root(name);
-        return new Parameter<>(has(name) && !rawParams.containsKey(name) ? 0 : 1, name, params.get(name), null);
+        return new Parameter<>(!has(name) && !rawParams.containsKey(name) ? -1 : 0, name, params.get(name), null);
+    }
+
+    public static class ParameterUnknownException extends CommandException
+    {
+        private String parameter;
+
+        private ParameterUnknownException(String message, Object... objects)
+        {
+            super(message, objects);
+        }
+
+        public String getParameter()
+        {
+            return parameter;
+        }
+
+        public static ParameterUnknownException create(String name)
+        {
+            ParameterUnknownException exc = MCOpts.translations.object(ParameterUnknownException::new, "commands.parameters.unknown", name);
+            exc.parameter = name;
+            return exc;
+        }
+    }
+
+    public static class ParameterTooManyArgumentsException extends CommandException
+    {
+        private String parameter;
+
+        private ParameterTooManyArgumentsException(String message, Object... objects)
+        {
+            super(message, objects);
+        }
+
+        public String getParameter()
+        {
+            return parameter;
+        }
+
+        public static ParameterTooManyArgumentsException create(String name)
+        {
+            ParameterTooManyArgumentsException exc = MCOpts.translations.object(ParameterTooManyArgumentsException::new, "commands.parameters.unknown", name);
+            exc.parameter = name;
+            return exc;
+        }
     }
 }

@@ -22,11 +22,16 @@ fun main(args: Array<String>) {
     val expect = expect(Parameters.expect())
             .named("split").split { expect(it) }
 
-    testExpect(expect, { it.split(" ").toTypedArray() }) { it }
-    testExpect(expect, { "--split \"${it.replace("\"", "\\\"")}".split(" ").toTypedArray() }, {
+    val transformBase: (String) -> Array<String> = { it.split(" ").toTypedArray() }
+    val transformInner: (String) -> Array<String> = { "--split \"${it.replace("\"", "\\\"")}".split(" ").toTypedArray() }
+
+    testExpect(expect, transformBase) { it }
+    testExpect(expect, transformInner, {
         (if (it.startsWith("\"")) it.substring(1) else it).replace("\\\"", "\"")
     })
-    testParameters(expect);
+
+    testParameters({ Parameters.of(transformBase(it), { expect.declare(it) }) });
+    testParameters({ Parameters.of(Parameters.of(transformInner(it), { expect.declare(it) })["split"].varargs({ arrayOfNulls<String>(it) }).get(), { expect.declare(it) }) });
 }
 
 fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionTransform: (String) -> String) {
@@ -78,8 +83,8 @@ fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionT
     assertSet("Server", "World", b = from("--suggest Server"));
 }
 
-fun testParameters(expect: Expect) {
-    val from : (String) -> Parameters = { Parameters.of(it.split(" ").toTypedArray(), { expect.declare(it) }) };
+fun testParameters(transform: (String) -> Parameters) {
+    val from : (String) -> Parameters = { transform(it) };
 
     val extract : (Parameter<String>) -> String = { it.optional().orElse(null) }
 

@@ -81,6 +81,10 @@ fun testExpect(expect: Expect, transform: (String) -> Array<String>, completionT
     // Suggest
 
     assertSet("Server", "World", b = from("--suggest Server"));
+
+    // Any
+
+    assertSet("foo", "fee", b = from("--or f"));
 }
 
 fun testParameters(transform: (String) -> Parameters) {
@@ -128,3 +132,4 @@ fun expect(e: Expect) = e
         .named("words").words { it.any("word1", "word2") }
         .named("spaces").any("This has spaces", "And this has: \"too\"")
         .named("suggest").anyRaw("Server", "World")
+        .named("or").any("foo", "boo").or().any("fee", "bee")

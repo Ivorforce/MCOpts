@@ -356,7 +356,7 @@ public class Parameters
     {
         requireBuilt();
         name = root(name);
-        return new Parameter<>(has(name) && !params.containsKey(name) ? -1 : 0, name, params.get(name), null);
+        return new Parameter<>(has(name) && !params.containsKey(name) ? 0 : -1, name, params.get(name), null);
     }
 
     public List<Pair<String, String>> raw()
@@ -375,6 +375,6 @@ public class Parameters
     {
         requireBuilt();
         name = root(name);
-        return new Parameter<>(has(name) && !rawParams.containsKey(name) ? -1 : 0, name, params.get(name), null);
+        return new Parameter<>(has(name) && !rawParams.containsKey(name) ? 0 : 1, name, params.get(name), null);
     }
 }

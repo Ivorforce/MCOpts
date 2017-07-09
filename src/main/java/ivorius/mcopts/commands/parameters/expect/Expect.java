@@ -23,6 +23,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -199,6 +200,12 @@ public class Expect
     public Expect then(Consumer<Expect> fun)
     {
         fun.accept(this);
+        return this;
+    }
+
+    public <P> Expect then(BiConsumer<Expect, P> fun, P p)
+    {
+        fun.accept(this, p);
         return this;
     }
 

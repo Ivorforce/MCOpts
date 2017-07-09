@@ -61,21 +61,27 @@ public class MCP
         return p.map(AccessorBiomeDictionary::getTypeWeak, s -> MCOpts.translations.commandException("commands.parameters.biometype.invalid", s));
     }
 
+    public static Parameter<WorldServer> dimension(Parameter<String> p, MinecraftServer server)
+    {
+        return p.filter(d -> !d.equals("~"), null)
+                .map(CommandBase::parseInt).map(server::worldServerForDimension, t -> MCOpts.translations.commandException("commands.parameters.dimension.invalid"));
+    }
+
+    @Deprecated
     public static Function<Parameter<String>, Parameter<WorldServer>> dimension(MinecraftServer server, ICommandSender sender)
     {
-        return p -> p.filter(d -> !d.equals("~"), null)
-                .map(CommandBase::parseInt).map(server::worldServerForDimension, t -> MCOpts.translations.commandException("commands.parameters.dimension.invalid"))
+        return p -> dimension(p, server)
                 .orElse((WorldServer) sender.getEntityWorld());
     }
 
-    public static Function<Parameter<String>, Parameter<Block>> block(ICommandSender commandSender)
+    public static Parameter<Block> block(Parameter<String> p, ICommandSender commandSender)
     {
-        return p -> p.map(s -> CommandBase.getBlockByText(commandSender, s));
+        return p.map(s -> CommandBase.getBlockByText(commandSender, s));
     }
 
-    public static Function<Parameter<String>, Parameter<ICommand>> command(MinecraftServer server)
+    public static Parameter<ICommand> command(Parameter<String> p, MinecraftServer server)
     {
-        return p -> p.map(server.getCommandManager().getCommands()::get, s -> new CommandNotFoundException());
+        return p.map(server.getCommandManager().getCommands()::get, s -> new CommandNotFoundException());
     }
 
     public static Function<Parameter<String>, Parameter<Entity>> entity(MinecraftServer server, ICommandSender sender)

@@ -6,6 +6,7 @@
 package ivorius.mcopts.commands.parameters;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.primitives.Doubles;
 import ivorius.mcopts.MCOpts;
@@ -121,7 +122,7 @@ public class Parameters
 
         if (args.length > 0 && args[args.length - 1].length() == 0)
         {
-            String lastRaw = raw.size() > 0 ? raw.get(raw.size() - 1) : null;
+            String lastRaw = raw.size() > 0 ? Iterables.getLast(raw) : null;
             // Are we in an open quote?
             if (!(last_tt == '\"' && (lastRaw == null || lastRaw.charAt(lastRaw.length() - 1) != '\"')))
             {
@@ -302,19 +303,19 @@ public class Parameters
 
     public String lastName()
     {
-        return order.get(order.size() - 1);
+        return Iterables.getLast(order);
     }
 
     public String last()
     {
         requireBuilt();
-        return raw.get(raw.size() - 1).getRight();
+        return Iterables.getLast(raw).getRight();
     }
 
     public String lastRaw()
     {
         requireBuilt();
-        return raw.get(raw.size() - 1).getLeft();
+        return Iterables.getLast(raw).getLeft();
     }
 
     public String[] lastAsArray()

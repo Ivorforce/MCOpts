@@ -128,10 +128,16 @@ public class Parameter<T>
         });
     }
 
-    public <O> Parameter<O> to(java.util.function.Function<Parameter<String>, Parameter<O>> fun)
+    public <O> Parameter<O> to(java.util.function.Function<Parameter<T>, Parameter<O>> fun)
     {
         //noinspection unchecked
-        return fun.apply((Parameter<String>) this);
+        return fun.apply(this);
+    }
+
+    public <O, P> Parameter<O> to(java.util.function.BiFunction<Parameter<T>, P, Parameter<O>> fun, P p)
+    {
+        //noinspection unchecked
+        return fun.apply(this, p);
     }
 
     public <O> Parameter<O> map(Function<T, O> fun)

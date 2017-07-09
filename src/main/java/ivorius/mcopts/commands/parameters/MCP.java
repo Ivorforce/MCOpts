@@ -10,6 +10,8 @@ import ivorius.mcopts.accessor.AccessorBiomeDictionary;
 import net.minecraft.block.Block;
 import net.minecraft.command.*;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
@@ -18,6 +20,7 @@ import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -79,6 +82,11 @@ public class MCP
         return p.map(s -> CommandBase.getBlockByText(commandSender, s));
     }
 
+    public static Parameter<Item> item(Parameter<String> p, ICommandSender commandSender)
+    {
+        return p.map(s -> CommandBase.getItemByText(commandSender, s));
+    }
+
     public static Parameter<ICommand> command(Parameter<String> p, MinecraftServer server)
     {
         return p.map(server.getCommandManager().getCommands()::get, s -> new CommandNotFoundException());
@@ -87,6 +95,36 @@ public class MCP
     public static Function<Parameter<String>, Parameter<Entity>> entity(MinecraftServer server, ICommandSender sender)
     {
         return p -> p.map(s -> CommandBase.getEntity(server, sender, s));
+    }
+
+    public static <T extends Entity> Function<Parameter<String>, Parameter<Entity>> entity(MinecraftServer server, ICommandSender sender, Class<T> targetClass)
+    {
+        return p -> p.map(s -> CommandBase.getEntity(server, sender, s, targetClass));
+    }
+
+    public static Function<Parameter<String>, Parameter<List<Entity>>> entities(MinecraftServer server, ICommandSender sender)
+    {
+        return p -> p.map(s -> CommandBase.getEntityList(server, sender, s));
+    }
+
+    public static Function<Parameter<String>, Parameter<EntityPlayerMP>> player(MinecraftServer server, ICommandSender sender)
+    {
+        return p -> p.map(s -> CommandBase.getPlayer(server, sender, s));
+    }
+
+    public static Function<Parameter<String>, Parameter<List<EntityPlayerMP>>> players(MinecraftServer server, ICommandSender sender)
+    {
+        return p -> p.map(s -> CommandBase.getPlayers(server, sender, s));
+    }
+
+    public static Function<Parameter<String>, Parameter<String>> playerName(MinecraftServer server, ICommandSender sender)
+    {
+        return p -> p.map(s -> CommandBase.getPlayerName(server, sender, s));
+    }
+
+    public static Function<Parameter<String>, Parameter<String>> entityName(MinecraftServer server, ICommandSender sender)
+    {
+        return p -> p.map(s -> CommandBase.getEntityName(server, sender, s));
     }
 
     public static Parameter<Rotation> rotation(Parameter<String> p)

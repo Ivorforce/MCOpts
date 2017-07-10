@@ -1,7 +1,9 @@
 commands.parameters.missing=Missing required parameter: %s
 commands.parameters.missing.argument=Parameter missing an argument: %s
 commands.parameters.invalid.generic=Invalid argument for parameter: %s
-commands.parameters.unknown=Unknown Parameter: %s
+commands.parameters.unknown=Unknown parameter: %s
+commands.parameters.toomany.ordered=Too many parameters
+commands.parameters.toomany.named=Too many parameters: %s
 
 commands.parameters.block=block
 commands.parameters.item=item

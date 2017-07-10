@@ -89,9 +89,9 @@ public class Parameter<T>
     protected <L> L get(List<L> list, int idx) throws CommandException
     {
         if (!isSet())
-            throw ArgumentMissingException.create(this, idx);
+            throw NotSetException.create(this, idx);
         if (list.isEmpty())
-            throw ParameterNotFoundException.create(this, idx);
+            throw ArgumentMissingException.create(this, idx);
         return list.get(idx);
     }
 
@@ -185,7 +185,7 @@ public class Parameter<T>
             {
                 return function().apply(s);
             }
-            catch (ParameterNotFoundException e)
+            catch (ArgumentMissingException e)
             {
                 return supplier.get();
             }
@@ -208,7 +208,7 @@ public class Parameter<T>
         {
             t = function().apply(params);
         }
-        catch (ParameterNotFoundException ignored)
+        catch (ArgumentMissingException ignored)
         {
         }
 
@@ -287,19 +287,6 @@ public class Parameter<T>
         O apply(T t) throws CommandException;
     }
 
-    public static class ParameterNotFoundException extends CommandException
-    {
-        private ParameterNotFoundException(String message, Object... objects)
-        {
-            super(message, objects);
-        }
-
-        public static ParameterNotFoundException create(Parameter parameter, int index)
-        {
-            return MCOpts.translations.object(ParameterNotFoundException::new, "commands.parameters.missing", parameter.name(index));
-        }
-    }
-
     public static class ArgumentMissingException extends CommandException
     {
         private ArgumentMissingException(String message, Object... objects)
@@ -309,7 +296,20 @@ public class Parameter<T>
 
         public static ArgumentMissingException create(Parameter parameter, int index)
         {
-            return MCOpts.translations.object(ArgumentMissingException::new, "commands.parameters.missing.argument", parameter.name(index));
+            return MCOpts.translations.object(ArgumentMissingException::new, "commands.parameters.missing", parameter.name(index));
+        }
+    }
+
+    public static class NotSetException extends ArgumentMissingException
+    {
+        private NotSetException(String message, Object... objects)
+        {
+            super(message, objects);
+        }
+
+        public static NotSetException create(Parameter parameter, int index)
+        {
+            return MCOpts.translations.object(NotSetException::new, "commands.parameters.missing.argument", parameter.name(index));
         }
     }
 }

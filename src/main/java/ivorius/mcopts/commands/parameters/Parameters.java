@@ -447,7 +447,9 @@ public class Parameters
 
         public static ParameterTooManyArgumentsException create(String name)
         {
-            ParameterTooManyArgumentsException exc = MCOpts.translations.object(ParameterTooManyArgumentsException::new, "commands.parameters.unknown", name);
+            ParameterTooManyArgumentsException exc = name != null
+                    ? MCOpts.translations.object(ParameterTooManyArgumentsException::new, "commands.parameters.toomany.named", name)
+                    : MCOpts.translations.object(ParameterTooManyArgumentsException::new, "commands.parameters.toomany.ordered");
             exc.parameter = name;
             return exc;
         }

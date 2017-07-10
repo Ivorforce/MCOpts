@@ -138,6 +138,7 @@ fun testParameters(transform: (String) -> Parameters) {
 
     assertThrows({ from("--asjdkla") }, Parameters.ParameterUnknownException::class.java)
     assertThrows({ from("-fs") }, Parameters.ParameterUnknownException::class.java)
+
     assertThrows({ from("--name a --name b") }, Parameters.ParameterTooManyArgumentsException::class.java)
     from("--rep a --rep b --rep c") // Don't throw because repeat()
 }

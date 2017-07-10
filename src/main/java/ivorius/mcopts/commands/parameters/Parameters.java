@@ -216,7 +216,7 @@ public class Parameters
             {
                 flags.add(curName = root(argRaw.substring(LONG_FLAG_PREFIX.length()).trim()));
                 if (!lenient) testAdd(curName);
-                    if (declaredFlags.contains(curName)) curName = null;
+                if (declaredFlags.contains(curName)) curName = null;
             }
             else if (interpretes() && hasShortPrefix(argRaw))
             {
@@ -241,6 +241,8 @@ public class Parameters
             }
             else
             {
+                if (!lenient) testAdd(curName);
+
                 if (until > 0 && curName == null) until--;
 
                 order.add(curName);
@@ -421,16 +423,16 @@ public class Parameters
             super(message, objects);
         }
 
-        public String getParameter()
-        {
-            return parameter;
-        }
-
         public static ParameterUnknownException create(String name)
         {
             ParameterUnknownException exc = MCOpts.translations.object(ParameterUnknownException::new, "commands.parameters.unknown", name);
             exc.parameter = name;
             return exc;
+        }
+
+        public String getParameter()
+        {
+            return parameter;
         }
     }
 
@@ -443,16 +445,16 @@ public class Parameters
             super(message, objects);
         }
 
-        public String getParameter()
-        {
-            return parameter;
-        }
-
         public static ParameterTooManyArgumentsException create(String name)
         {
             ParameterTooManyArgumentsException exc = MCOpts.translations.object(ParameterTooManyArgumentsException::new, "commands.parameters.unknown", name);
             exc.parameter = name;
             return exc;
+        }
+
+        public String getParameter()
+        {
+            return parameter;
         }
     }
 }

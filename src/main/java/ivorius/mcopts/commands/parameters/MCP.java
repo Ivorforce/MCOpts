@@ -110,11 +110,6 @@ public class MCP
         return p -> p.map(s -> CommandBase.getPlayer(server, sender, s));
     }
 
-    public static Function<Parameter<String>, Parameter<List<EntityPlayerMP>>> players(MinecraftServer server, ICommandSender sender)
-    {
-        return p -> p.map(s -> CommandBase.getPlayers(server, sender, s));
-    }
-
     public static Function<Parameter<String>, Parameter<String>> playerName(MinecraftServer server, ICommandSender sender)
     {
         return p -> p.map(s -> CommandBase.getPlayerName(server, sender, s));

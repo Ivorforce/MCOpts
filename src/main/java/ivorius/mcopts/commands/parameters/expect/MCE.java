@@ -110,7 +110,7 @@ public class MCE
 
     public static void player(Expect e)
     {
-        e.next((server, sender, parameters, pos) -> Arrays.stream(server.getOnlinePlayerNames())).description("commands.parameters.player");
+        e.next((server, sender, parameters, pos) -> Arrays.stream(server.getAllUsernames())).description("commands.parameters.player");
     }
 
     public static void rotation(Expect e)

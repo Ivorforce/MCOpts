@@ -1,3 +1,5 @@
+![Build Status](https://cloud.drone.io/api/badges/Ivorforce/MCOpts/status.svg)
+
 # What?
 
 MCOpts is a getopt / getopt_long / cli / bash oriented minecraft command parameter management api.

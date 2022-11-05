@@ -1,12 +1,9 @@
 buildscript {
     ext.kotlin_version = '1.0.7'
+
     repositories {
-        jcenter()
-        maven { url = "https://maven.minecraftforge.net/" }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
+        maven { url = 'https://maven.minecraftforge.net/' }
+        mavenCentral()
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
